@@ -53,25 +53,37 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="-" \
-            CODE_SIGN_ENTITLEMENTS="" \
             DEVELOPMENT_TEAM="" \
-            AD_HOC_CODE_SIGNING_ALLOWED=YES
+            AD_HOC_CODE_SIGNING_ALLOWED=YES \
+            COMPILER_INDEX_STORE_ENABLE=NO
 
-      - name: Find .app
+      - name: Explore build output
+        if: always()
         run: |
-          echo "=== Searching for .app ==="
-          find ios/build -name "*.app" -type d 2>/dev/null
-          APP_PATH=$(find ios/build -name "*.app" -type d -path "*Release-iphoneos*" | head -1)
+          echo "=== Full build directory tree ==="
+          find ios/build -maxdepth 5 -type d | head -80
+          echo ""
+          echo "=== All .app bundles ==="
+          find ios/build -name "*.app" -type d 2>/dev/null || echo "No .app found"
+          echo ""
+          echo "=== Products folder ==="
+          find ios/build -path "*/Products/*" -type d 2>/dev/null | head -20
+          echo ""
+          echo "=== All files in Products ==="
+          find ios/build -path "*/Products/*" 2>/dev/null | head -40
+
+      - name: Find .app and package IPA
+        run: |
+          # Search broadly for .app
+          APP_PATH=$(find ios/build -name "*.app" -type d | grep -v "\.app/" | head -1)
           if [ -z "$APP_PATH" ]; then
-            echo "No .app in Release-iphoneos, searching everywhere..."
-            APP_PATH=$(find ios/build -name "*.app" -type d | grep -v "\.app/" | head -1)
+            echo "ERROR: No .app bundle found anywhere in ios/build"
+            echo "Listing all contents:"
+            find ios/build -type f | head -50
+            exit 1
           fi
-          echo "APP_PATH=$APP_PATH"
-          echo "APP_PATH=$APP_PATH" >> $GITHUB_ENV
+          echo "Found app: $APP_PATH"
           ls -la "$APP_PATH"
-
-      - name: Package IPA
-        run: |
           mkdir -p Payload
           cp -r "$APP_PATH" Payload/
           zip -r UlsuNotSmart.ipa Payload
