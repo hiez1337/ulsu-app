@@ -1,0 +1,67 @@
+name: Build iOS IPA (unsigned)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate native iOS project
+        run: npx expo prebuild --platform ios --clean
+
+      - name: Build iOS app (unsigned, real device)
+        run: |
+          cd ios
+          # Find workspace and scheme names
+          WORKSPACE=$(ls -d *.xcworkspace | head -1)
+          SCHEME=$(xcodebuild -workspace "$WORKSPACE" -list 2>/dev/null | grep -A 20 "Schemes:" | grep -v "Schemes:" | head -1 | xargs)
+          echo "Workspace: $WORKSPACE, Scheme: $SCHEME"
+          xcodebuild \
+            -workspace "$WORKSPACE" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -sdk iphoneos \
+            -arch arm64 \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            DEVELOPMENT_TEAM="" \
+            | tail -50
+
+      - name: Find and verify .app
+        run: |
+          APP_PATH=$(find ios/build -name "*.app" -path "*/Release-iphoneos/*" -not -path "*/Packages/*" | head -1)
+          echo "APP_PATH=$APP_PATH" >> $GITHUB_ENV
+          echo "Found: $APP_PATH"
+          # Check it's a real device binary, not simulator
+          BINARY=$(find "$APP_PATH" -maxdepth 1 -type f -perm +111 | head -1)
+          file "$BINARY"
+          lipo -info "$BINARY"
+
+      - name: Package IPA
+        run: |
+          mkdir -p Payload
+          cp -r "$APP_PATH" Payload/
+          zip -r UlsuNotSmart.ipa Payload
+          ls -lh UlsuNotSmart.ipa
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: UlsuNotSmart-iOS
+          path: UlsuNotSmart.ipa
