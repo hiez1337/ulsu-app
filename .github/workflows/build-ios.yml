@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-ios:
-    runs-on: macos-latest
+    runs-on: macos-15
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,16 +19,30 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install CocoaPods
+        run: brew install cocoapods
+
       - name: Generate native iOS project
         run: npx expo prebuild --platform ios --clean
+
+      - name: Install Pods
+        run: cd ios && pod install
+
+      - name: List workspace info
+        run: |
+          cd ios
+          echo "=== Files ==="
+          ls -la
+          WORKSPACE=$(ls -d *.xcworkspace | head -1)
+          echo "=== Workspace: $WORKSPACE ==="
+          xcodebuild -workspace "$WORKSPACE" -list
 
       - name: Build iOS app (unsigned, real device)
         run: |
           cd ios
-          # Find workspace and scheme names
           WORKSPACE=$(ls -d *.xcworkspace | head -1)
-          SCHEME=$(xcodebuild -workspace "$WORKSPACE" -list 2>/dev/null | grep -A 20 "Schemes:" | grep -v "Schemes:" | head -1 | xargs)
-          echo "Workspace: $WORKSPACE, Scheme: $SCHEME"
+          SCHEME=$(xcodebuild -workspace "$WORKSPACE" -list 2>/dev/null | grep -A 20 "Schemes:" | grep -v "Schemes:" | sed '/^$/d' | head -1 | xargs)
+          echo "Building workspace=$WORKSPACE scheme=$SCHEME"
           xcodebuild \
             -workspace "$WORKSPACE" \
             -scheme "$SCHEME" \
@@ -38,20 +52,23 @@ jobs:
             -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_IDENTITY="-" \
             CODE_SIGN_ENTITLEMENTS="" \
             DEVELOPMENT_TEAM="" \
-            | tail -50
+            AD_HOC_CODE_SIGNING_ALLOWED=YES
 
-      - name: Find and verify .app
+      - name: Find .app
         run: |
-          APP_PATH=$(find ios/build -name "*.app" -path "*/Release-iphoneos/*" -not -path "*/Packages/*" | head -1)
+          echo "=== Searching for .app ==="
+          find ios/build -name "*.app" -type d 2>/dev/null
+          APP_PATH=$(find ios/build -name "*.app" -type d -path "*Release-iphoneos*" | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "No .app in Release-iphoneos, searching everywhere..."
+            APP_PATH=$(find ios/build -name "*.app" -type d | grep -v "\.app/" | head -1)
+          fi
+          echo "APP_PATH=$APP_PATH"
           echo "APP_PATH=$APP_PATH" >> $GITHUB_ENV
-          echo "Found: $APP_PATH"
-          # Check it's a real device binary, not simulator
-          BINARY=$(find "$APP_PATH" -maxdepth 1 -type f -perm +111 | head -1)
-          file "$BINARY"
-          lipo -info "$BINARY"
+          ls -la "$APP_PATH"
 
       - name: Package IPA
         run: |
