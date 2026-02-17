@@ -14,7 +14,12 @@ export default function App() {
   const [currentGroup, setCurrentGroup] = useState<{cat: string, course: string, name: string} | null>(null);
   const [weekType, setWeekType] = useState<"1" | "2">(getCurrentWeekType());
   const todayIndex = getTodayDayIndex();
+  const currentWeekType = getCurrentWeekType(); // Real-time current week
   const [isLoading, setIsLoading] = useState(true);
+
+  const refreshWeekType = () => {
+    setWeekType(getCurrentWeekType());
+  };
 
   // Restore last selected group on launch
   useEffect(() => {
@@ -107,9 +112,11 @@ export default function App() {
         data={data} 
         groupName={currentGroup.name}
         weekType={weekType}
+        currentWeekType={currentWeekType}
         todayIndex={todayIndex}
         onBack={clearGroup}
         onToggleWeek={() => setWeekType(w => w === '1' ? '2' : '1')}
+        onRefresh={refreshWeekType}
       />
     </View>
   );

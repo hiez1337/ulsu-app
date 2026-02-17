@@ -1,7 +1,7 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useState } from 'react';
 import { 
   StyleSheet, Text, View, FlatList, TouchableOpacity, 
-  Platform, Animated 
+  Platform, Animated, RefreshControl 
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,9 +13,11 @@ interface ScheduleScreenProps {
   data: DaySchedule[];
   groupName: string;
   weekType: "1" | "2";
+  currentWeekType: "1" | "2";
   todayIndex: number;
   onBack: () => void;
   onToggleWeek: () => void;
+  onRefresh: () => void;
 }
 
 const DAY_ICONS: Record<string, string> = {
@@ -53,9 +55,19 @@ const ScheduleItemComponent = ({ item, isLast }: { item: ScheduleItem; isLast: b
 );
 
 export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({ 
-  data, groupName, weekType, todayIndex, onBack, onToggleWeek 
+  data, groupName, weekType, currentWeekType, todayIndex, onBack, onToggleWeek, onRefresh 
 }) => {
   const flatListRef = useRef<FlatList>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = useCallback(() => {
+    setRefreshing(true);
+    onRefresh();
+    setTimeout(() => setRefreshing(false), 500);
+  }, [onRefresh]);
+
+  // Show "Today" badge only when viewing the current week
+  const isViewingCurrentWeek = weekType === currentWeekType;
 
   // Find today's card index in the filtered data array
   const todayDataIndex = data.findIndex(
@@ -116,11 +128,19 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         onLayout={onListLayout}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={theme.accent}
+            colors={[theme.accent]}
+          />
+        }
         onScrollToIndexFailed={(info) => {
           flatListRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: true });
         }}
         renderItem={({ item }) => {
-          const isToday = WEEKDAY_NAMES.indexOf(item.weekday) === todayIndex;
+          const isToday = isViewingCurrentWeek && WEEKDAY_NAMES.indexOf(item.weekday) === todayIndex;
           return (
             <View style={[styles.dayCard, isToday && styles.dayCardToday]}>
               <View style={styles.dayHeader}>
@@ -134,11 +154,11 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                 <Text style={styles.dayCount}>{item.items.length} {getPairWord(item.items.length)}</Text>
               </View>
               <View style={styles.dayBody}>
-                {item.items.map((lesson, index) => (
+                {item.items.map((lesson: ScheduleItem, idx: number) => (
                   <ScheduleItemComponent 
-                    key={index} 
+                    key={idx} 
                     item={lesson} 
-                    isLast={index === item.items.length - 1}
+                    isLast={idx === item.items.length - 1}
                   />
                 ))}
               </View>
