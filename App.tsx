@@ -5,13 +5,15 @@ import { ScheduleScreen } from './src/screens/ScheduleScreen';
 import { GroupSelectionScreen } from './src/screens/GroupSelectionScreen';
 import { DaySchedule } from './src/api/parser';
 import { theme } from './src/theme';
+import { getCurrentWeekType, getTodayDayIndex } from './src/utils/weekDetector';
 import scheduleData from './src/data/schedule.json';
 
 const STORAGE_KEY = 'lastSelectedGroup';
 
 export default function App() {
   const [currentGroup, setCurrentGroup] = useState<{cat: string, course: string, name: string} | null>(null);
-  const [weekType, setWeekType] = useState<"1" | "2">("1");
+  const [weekType, setWeekType] = useState<"1" | "2">(getCurrentWeekType());
+  const todayIndex = getTodayDayIndex();
   const [isLoading, setIsLoading] = useState(true);
 
   // Restore last selected group on launch
@@ -105,6 +107,7 @@ export default function App() {
         data={data} 
         groupName={currentGroup.name}
         weekType={weekType}
+        todayIndex={todayIndex}
         onBack={clearGroup}
         onToggleWeek={() => setWeekType(w => w === '1' ? '2' : '1')}
       />

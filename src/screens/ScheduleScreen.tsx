@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useCallback } from 'react';
 import { 
   StyleSheet, Text, View, FlatList, TouchableOpacity, 
   Platform, Animated 
@@ -6,12 +6,14 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { DaySchedule, ScheduleItem } from '../api/parser';
+import { WEEKDAY_NAMES } from '../utils/weekDetector';
 import { theme } from '../theme';
 
 interface ScheduleScreenProps {
   data: DaySchedule[];
   groupName: string;
   weekType: "1" | "2";
+  todayIndex: number;
   onBack: () => void;
   onToggleWeek: () => void;
 }
@@ -51,8 +53,28 @@ const ScheduleItemComponent = ({ item, isLast }: { item: ScheduleItem; isLast: b
 );
 
 export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({ 
-  data, groupName, weekType, onBack, onToggleWeek 
+  data, groupName, weekType, todayIndex, onBack, onToggleWeek 
 }) => {
+  const flatListRef = useRef<FlatList>(null);
+
+  // Find today's card index in the filtered data array
+  const todayDataIndex = data.findIndex(
+    d => WEEKDAY_NAMES.indexOf(d.weekday) === todayIndex
+  );
+
+  // Auto-scroll to today's card when data changes
+  const onListLayout = useCallback(() => {
+    if (todayDataIndex > 0 && flatListRef.current) {
+      setTimeout(() => {
+        flatListRef.current?.scrollToIndex({ 
+          index: todayDataIndex, 
+          animated: true, 
+          viewPosition: 0.1 
+        });
+      }, 300);
+    }
+  }, [todayDataIndex]);
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -88,28 +110,41 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
 
       {/* Schedule List */}
       <FlatList
+        ref={flatListRef}
         data={data}
         keyExtractor={(item, index) => item.weekday + index}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <View style={styles.dayCard}>
-            <View style={styles.dayHeader}>
-              <View style={[styles.dayDot, { backgroundColor: DAY_COLORS[item.weekday] || theme.accent }]} />
-              <Text style={styles.dayTitle}>{item.weekday}</Text>
-              <Text style={styles.dayCount}>{item.items.length} {getPairWord(item.items.length)}</Text>
+        onLayout={onListLayout}
+        onScrollToIndexFailed={(info) => {
+          flatListRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: true });
+        }}
+        renderItem={({ item }) => {
+          const isToday = WEEKDAY_NAMES.indexOf(item.weekday) === todayIndex;
+          return (
+            <View style={[styles.dayCard, isToday && styles.dayCardToday]}>
+              <View style={styles.dayHeader}>
+                <View style={[styles.dayDot, { backgroundColor: DAY_COLORS[item.weekday] || theme.accent }]} />
+                <Text style={styles.dayTitle}>{item.weekday}</Text>
+                {isToday && (
+                  <View style={styles.todayBadge}>
+                    <Text style={styles.todayBadgeText}>Сегодня</Text>
+                  </View>
+                )}
+                <Text style={styles.dayCount}>{item.items.length} {getPairWord(item.items.length)}</Text>
+              </View>
+              <View style={styles.dayBody}>
+                {item.items.map((lesson, index) => (
+                  <ScheduleItemComponent 
+                    key={index} 
+                    item={lesson} 
+                    isLast={index === item.items.length - 1}
+                  />
+                ))}
+              </View>
             </View>
-            <View style={styles.dayBody}>
-              {item.items.map((lesson, index) => (
-                <ScheduleItemComponent 
-                  key={index} 
-                  item={lesson} 
-                  isLast={index === item.items.length - 1}
-                />
-              ))}
-            </View>
-          </View>
-        )}
+          );
+        }}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Ionicons name="calendar-outline" size={64} color={theme.textTertiary} />
@@ -195,6 +230,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.separatorLight,
   },
+  dayCardToday: {
+    borderColor: theme.accent,
+    borderWidth: 1.5,
+  },
   dayHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -218,6 +257,18 @@ const styles = StyleSheet.create({
   dayCount: {
     fontSize: 13,
     color: theme.textSecondary,
+  },
+  todayBadge: {
+    backgroundColor: theme.accentLight,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    marginRight: 8,
+  },
+  todayBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: theme.accent,
   },
   dayBody: {
     paddingHorizontal: 16,
