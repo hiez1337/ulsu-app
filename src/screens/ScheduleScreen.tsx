@@ -1,7 +1,7 @@
-import React, { useRef, useCallback, useState } from 'react';
+import React, { useRef, useCallback, useState, useEffect, useMemo } from 'react';
 import { 
   StyleSheet, Text, View, FlatList, TouchableOpacity, 
-  Platform, Animated, RefreshControl 
+  Platform, Animated, RefreshControl, Easing 
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -40,16 +40,77 @@ const DAY_COLORS: Record<string, string> = {
   'Воскресенье': '#8E8E93',
 };
 
-const ScheduleItemComponent = ({ item, isLast }: { item: ScheduleItem; isLast: boolean }) => (
+/** Parse "HH:MM" to total minutes since midnight */
+function parseTimeToMinutes(timeStr: string): number {
+  const [h, m] = timeStr.trim().split(':').map(Number);
+  return h * 60 + m;
+}
+
+/** Parse "08:30 – 10:00" → { start, end } in minutes */
+function parseLessonTimeRange(timeRange: string): { start: number; end: number } | null {
+  // handle both "–" (en dash) and "-" (hyphen)
+  const parts = timeRange.split(/[–\-]/);
+  if (parts.length < 2) return null;
+  const start = parseTimeToMinutes(parts[0]);
+  const end = parseTimeToMinutes(parts[1]);
+  if (isNaN(start) || isNaN(end)) return null;
+  return { start, end };
+}
+
+/** Get current time as minutes since midnight */
+function getCurrentMinutes(): number {
+  const now = new Date();
+  return now.getHours() * 60 + now.getMinutes();
+}
+
+/** Animated progress bar for the currently active lesson */
+const LessonProgressBar = ({ progress, dayColor }: { progress: number; dayColor: string }) => {
+  const animValue = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(animValue, {
+      toValue: progress,
+      duration: 600,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false,
+    }).start();
+  }, [progress]);
+
+  const widthInterpolation = animValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0%', '100%'],
+    extrapolate: 'clamp',
+  });
+
+  return (
+    <View style={styles.progressContainer}>
+      <View style={styles.progressTrack}>
+        <Animated.View style={[styles.progressFill, { width: widthInterpolation }]}> 
+          <LinearGradient
+            colors={[dayColor, dayColor + 'AA']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={StyleSheet.absoluteFill}
+          />
+        </Animated.View>
+      </View>
+    </View>
+  );
+};
+
+const ScheduleItemComponent = ({ item, isLast, isActive, progress, dayColor }: { 
+  item: ScheduleItem; isLast: boolean; isActive: boolean; progress: number; dayColor: string 
+}) => (
   <View style={[styles.lessonRow, !isLast && styles.lessonBorder]}>
     <View style={styles.timeCol}>
-      <View style={styles.numBadge}>
-        <Text style={styles.numBadgeText}>{item.num}</Text>
+      <View style={[styles.numBadge, isActive && { backgroundColor: dayColor + '30' }]}>
+        <Text style={[styles.numBadgeText, isActive && { color: dayColor }]}>{item.num}</Text>
       </View>
       <Text style={styles.timeText}>{item.time}</Text>
     </View>
     <View style={styles.lessonContent}>
-      <Text style={styles.lessonText}>{item.place}</Text>
+      <Text style={[styles.lessonText, isActive && styles.lessonTextActive]}>{item.place}</Text>
+      {isActive && <LessonProgressBar progress={progress} dayColor={dayColor} />}
     </View>
   </View>
 );
@@ -59,6 +120,15 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
 }) => {
   const flatListRef = useRef<FlatList>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [currentMinutes, setCurrentMinutes] = useState(getCurrentMinutes);
+
+  // Update current time every 30 seconds for live progress
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentMinutes(getCurrentMinutes());
+    }, 30_000);
+    return () => clearInterval(timer);
+  }, []);
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
@@ -141,10 +211,11 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
         }}
         renderItem={({ item }) => {
           const isToday = isViewingCurrentWeek && WEEKDAY_NAMES.indexOf(item.weekday) === todayIndex;
+          const dayColor = DAY_COLORS[item.weekday] || theme.accent;
           return (
             <View style={[styles.dayCard, isToday && styles.dayCardToday]}>
               <View style={styles.dayHeader}>
-                <View style={[styles.dayDot, { backgroundColor: DAY_COLORS[item.weekday] || theme.accent }]} />
+                <View style={[styles.dayDot, { backgroundColor: dayColor }]} />
                 <Text style={styles.dayTitle}>{item.weekday}</Text>
                 {isToday && (
                   <View style={styles.todayBadge}>
@@ -154,13 +225,28 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({
                 <Text style={styles.dayCount}>{item.items.length} {getPairWord(item.items.length)}</Text>
               </View>
               <View style={styles.dayBody}>
-                {item.items.map((lesson: ScheduleItem, idx: number) => (
-                  <ScheduleItemComponent 
-                    key={idx} 
-                    item={lesson} 
-                    isLast={idx === item.items.length - 1}
-                  />
-                ))}
+                {item.items.map((lesson: ScheduleItem, idx: number) => {
+                  let isActive = false;
+                  let progress = 0;
+                  if (isToday) {
+                    const range = parseLessonTimeRange(lesson.time);
+                    if (range && currentMinutes >= range.start && currentMinutes <= range.end) {
+                      isActive = true;
+                      const total = range.end - range.start;
+                      progress = total > 0 ? (currentMinutes - range.start) / total : 0;
+                    }
+                  }
+                  return (
+                    <ScheduleItemComponent 
+                      key={idx} 
+                      item={lesson} 
+                      isLast={idx === item.items.length - 1}
+                      isActive={isActive}
+                      progress={progress}
+                      dayColor={dayColor}
+                    />
+                  );
+                })}
               </View>
             </View>
           );
@@ -333,6 +419,24 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: theme.textPrimary,
     lineHeight: 21,
+  },
+  lessonTextActive: {
+    fontWeight: '600',
+  },
+  progressContainer: {
+    marginTop: 10,
+    marginBottom: 2,
+  },
+  progressTrack: {
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 2,
+    overflow: 'hidden',
   },
   emptyContainer: {
     alignItems: 'center',
