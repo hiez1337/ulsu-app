@@ -5,7 +5,7 @@ OUTPUT_BANNER = os.path.abspath("assets/showcase_github.png")
 SCREENSHOTS_DIR = os.path.abspath("assets/screenshots")
 
 WIDTH = 2100
-HEIGHT = 3200
+HEIGHT = 3100
 BG_COLOR = (13, 17, 23)  # #0D1117 (GitHub Dark)
 
 SCREENS_DATA = [
@@ -194,7 +194,7 @@ def main():
     row_gap = 75
     left_margin = (WIDTH - (3 * col_width + 2 * col_gap)) // 2
     
-    row_starts_y = [360, 1750]
+    row_starts_y = [360, 1720]
     
     for idx, item in enumerate(SCREENS_DATA):
         col = idx % 3
@@ -223,20 +223,13 @@ def main():
         banner.paste(phone, (pos_x, pos_y), phone)
         
         # Caption below phone
-        caption_y = pos_y + phone.height + 24
+        caption_y = pos_y + phone.height + 26
         
-        # Tag pill
-        tag_t = item["tag"]
-        bbox_tag = draw.textbbox((0, 0), tag_t, font=font_card_tag)
-        tw = (bbox_tag[2] - bbox_tag[0]) + 16
-        draw.rounded_rectangle([(pos_x, caption_y), (pos_x + tw, caption_y + 24)], radius=6, fill=(10, 132, 255, 30), outline=(10, 132, 255), width=1)
-        draw.text((pos_x + 8, caption_y + 3), tag_t, font=font_card_tag, fill=(88, 166, 255))
-        
-        # Title
-        draw.text((pos_x, caption_y + 34), item["title"], font=font_card_title, fill=(240, 246, 252))
+        # Title (prominent and high contrast)
+        draw.text((pos_x, caption_y), item["title"], font=font_card_title, fill=(240, 246, 252))
         
         # Subtitle
-        draw.text((pos_x, caption_y + 76), item["subtitle"], font=font_card_sub, fill=(139, 148, 158))
+        draw.text((pos_x, caption_y + 44), item["subtitle"], font=font_card_sub, fill=(139, 148, 158))
 
     # Convert to RGB and save
     final_banner = banner.convert("RGB")
