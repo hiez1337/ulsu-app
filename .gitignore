@@ -54,6 +54,10 @@ build/
 *.ipa
 Payload/
 
+# Mockups & Drafts
+mockups/
+*.mockup.*
+
 # OS & Editors
 .DS_Store
 Thumbs.db

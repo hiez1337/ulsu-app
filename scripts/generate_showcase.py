@@ -5,7 +5,7 @@ OUTPUT_BANNER = os.path.abspath("assets/showcase_github.png")
 SCREENSHOTS_DIR = os.path.abspath("assets/screenshots")
 
 WIDTH = 2100
-HEIGHT = 3000
+HEIGHT = 3200
 BG_COLOR = (13, 17, 23)  # #0D1117 (GitHub Dark)
 
 SCREENS_DATA = [
@@ -194,7 +194,7 @@ def main():
     row_gap = 75
     left_margin = (WIDTH - (3 * col_width + 2 * col_gap)) // 2
     
-    row_starts_y = [340, 1680]
+    row_starts_y = [360, 1750]
     
     for idx, item in enumerate(SCREENS_DATA):
         col = idx % 3
