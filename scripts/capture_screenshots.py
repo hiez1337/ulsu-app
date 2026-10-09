@@ -69,10 +69,9 @@ async def main():
         "about:blank"
     ]
     
-    print(f"Launching Edge with user_data_dir: {user_data_dir}...", flush=True)
+    print(f"Launching Edge...", flush=True)
     proc = subprocess.Popen(cmd)
     
-    # Wait for debugging port to be ready
     ws_url = None
     for attempt in range(15):
         time.sleep(0.5)
@@ -90,7 +89,7 @@ async def main():
         proc.kill()
         raise RuntimeError("Failed to obtain webSocketDebuggerUrl from Edge")
 
-    print(f"Connecting to CDP at {ws_url}...", flush=True)
+    print(f"Connecting to CDP...", flush=True)
     try:
         async with websockets.connect(ws_url, max_size=25*1024*1024) as ws:
             cdp = CDPClient(ws)
@@ -103,33 +102,107 @@ async def main():
                 "mobile": True
             })
 
-            # Navigate to localhost:8081
-            print("Navigating to http://localhost:8081...", flush=True)
+            # --- SCREEN 1: Group Selection (Clean, no group in storage) ---
+            print("1. Preparing Screen 1: Group Selection...", flush=True)
             await cdp.call("Page.navigate", {"url": URL})
-            await asyncio.sleep(2.5)
-
-            # --- SCREEN 1: Group Selection ---
-            print("Preparing Screen 1: Group Selection...", flush=True)
-            await cdp.eval_js("localStorage.clear();")
+            await asyncio.sleep(2)
+            await cdp.eval_js("localStorage.clear(); window.scrollTo(0, 0);")
             await cdp.call("Page.reload")
             await asyncio.sleep(2)
+            await cdp.eval_js("""
+                window.scrollTo(0, 0);
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+                const scrollables = document.querySelectorAll('div');
+                scrollables.forEach(el => { el.scrollTop = 0; });
+            """)
+            await asyncio.sleep(0.5)
             await cdp.capture_screenshot("1_group_selection.png")
 
-            # --- SCREEN 2: Schedule Day ---
-            print("Preparing Screen 2: Schedule Day...", flush=True)
-            # Click "Открыть расписание"
-            await cdp.eval_js("""(() => {
-                const btn = Array.from(document.querySelectorAll('*')).find(e => e.textContent === 'Открыть расписание');
-                if (btn) {
-                    const target = btn.closest('[role="button"]') || btn.parentElement || btn;
-                    target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
-                }
-            })()""")
+            # --- SCREEN 2: Schedule Day (Clean reload with saved group) ---
+            print("2. Preparing Screen 2: Schedule Day...", flush=True)
+            await cdp.eval_js("""
+                localStorage.setItem('lastSelectedGroup', JSON.stringify({ category: 'ПМ', course: '1', name: 'ПМ-О-26/1' }));
+                localStorage.setItem('@settings_default_subgroup', 'all');
+            """)
+            await cdp.call("Page.reload")
             await asyncio.sleep(2)
+            await cdp.eval_js("""
+                window.scrollTo(0, 0);
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+                const scrollables = document.querySelectorAll('div');
+                scrollables.forEach(el => { el.scrollTop = 0; });
+            """)
+            await asyncio.sleep(0.5)
             await cdp.capture_screenshot("2_schedule_day.png")
 
-            # --- SCREEN 3: Lesson Detail Sheet ---
-            print("Preparing Screen 3: Lesson Detail...", flush=True)
+            # --- SCREEN 4: Weekly Grid (Modal is guaranteed closed) ---
+            print("3. Preparing Screen 4: Weekly Grid...", flush=True)
+            await cdp.eval_js("""(() => {
+                const tab = document.querySelector('[role="tab"][aria-label="Неделя"]');
+                if (tab) tab.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+                window.scrollTo(0, 0);
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+            })()""")
+            await asyncio.sleep(1.5)
+            await cdp.eval_js("""
+                window.scrollTo(0, 0);
+                document.querySelectorAll('div').forEach(el => { el.scrollTop = 0; });
+            """)
+            await asyncio.sleep(0.5)
+            await cdp.capture_screenshot("4_weekly_grid.png")
+
+            # --- SCREEN 5: Search & Rooms (Modal is guaranteed closed) ---
+            print("4. Preparing Screen 5: Search & Rooms...", flush=True)
+            await cdp.eval_js("""(() => {
+                const tab = document.querySelector('[role="tab"][aria-label="Поиск"]');
+                if (tab) tab.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+                window.scrollTo(0, 0);
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+            })()""")
+            await asyncio.sleep(1.5)
+            await cdp.eval_js("""
+                window.scrollTo(0, 0);
+                document.querySelectorAll('div').forEach(el => { el.scrollTop = 0; });
+            """)
+            await asyncio.sleep(0.5)
+            await cdp.capture_screenshot("5_search_rooms.png")
+
+            # --- SCREEN 6: Settings (Modal is guaranteed closed) ---
+            print("5. Preparing Screen 6: Settings...", flush=True)
+            await cdp.eval_js("""(() => {
+                const tab = document.querySelector('[role="tab"][aria-label="Настройки"]');
+                if (tab) tab.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+                window.scrollTo(0, 0);
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
+            })()""")
+            await asyncio.sleep(1.5)
+            await cdp.eval_js("""
+                window.scrollTo(0, 0);
+                document.querySelectorAll('div').forEach(el => { el.scrollTop = 0; });
+            """)
+            await asyncio.sleep(0.5)
+            await cdp.capture_screenshot("6_settings.png")
+
+            # --- SCREEN 3: Lesson Detail Sheet (NOW open modal on schedule screen) ---
+            print("6. Preparing Screen 3: Lesson Detail...", flush=True)
+            # Switch back to schedule tab
+            await cdp.eval_js("""(() => {
+                const tab = document.querySelector('[role="tab"][aria-label="День"]');
+                if (tab) tab.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+            })()""")
+            await asyncio.sleep(1.5)
+            await cdp.eval_js("""
+                window.scrollTo(0, 0);
+                document.querySelectorAll('div').forEach(el => { el.scrollTop = 0; });
+            """)
+            await asyncio.sleep(0.5)
+
+            # Click lesson card
             await cdp.eval_js("""(() => {
                 const el = document.evaluate("//div[contains(text(), 'ауд.')]", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
                 if (el) {
@@ -141,7 +214,7 @@ async def main():
             })()""")
             await asyncio.sleep(1.5)
 
-            # Add a task to make the screenshot look realistic and informative
+            # Add sample task in modal
             await cdp.eval_js("""(() => {
                 const input = document.querySelector('input[placeholder*="Добавить задание"]');
                 if (input) {
@@ -156,48 +229,7 @@ async def main():
             await asyncio.sleep(0.8)
             await cdp.capture_screenshot("3_lesson_detail.png")
 
-            # Close sheet
-            print("Closing lesson detail sheet...", flush=True)
-            await cdp.eval_js("""(() => {
-                const closeBtn = Array.from(document.querySelectorAll('div')).find(d => {
-                    const s = window.getComputedStyle(d);
-                    return (s.borderRadius === '18px' || s.width === '36px') && (d.textContent.includes('') || d.textContent.includes('✕') || d.textContent.length === 1);
-                });
-                if (closeBtn) closeBtn.click();
-            })()""")
-            await asyncio.sleep(1)
-
-            # --- SCREEN 4: Weekly Grid ---
-            print("Preparing Screen 4: Weekly Grid...", flush=True)
-            await cdp.eval_js("""(() => {
-                const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
-                const tab = tabs.find(t => t.textContent.includes('Неделя'));
-                if (tab) tab.click();
-            })()""")
-            await asyncio.sleep(1.5)
-            await cdp.capture_screenshot("4_weekly_grid.png")
-
-            # --- SCREEN 5: Search & Free Rooms ---
-            print("Preparing Screen 5: Search & Rooms...", flush=True)
-            await cdp.eval_js("""(() => {
-                const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
-                const tab = tabs.find(t => t.textContent.includes('Поиск'));
-                if (tab) tab.click();
-            })()""")
-            await asyncio.sleep(1.5)
-            await cdp.capture_screenshot("5_search_rooms.png")
-
-            # --- SCREEN 6: Settings ---
-            print("Preparing Screen 6: Settings...", flush=True)
-            await cdp.eval_js("""(() => {
-                const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
-                const tab = tabs.find(t => t.textContent.includes('Настройки'));
-                if (tab) tab.click();
-            })()""")
-            await asyncio.sleep(1.5)
-            await cdp.capture_screenshot("6_settings.png")
-
-            print("All 6 screenshots successfully captured and stored in assets/screenshots/!", flush=True)
+            print("All 6 screenshots cleanly captured!", flush=True)
 
     finally:
         proc.terminate()

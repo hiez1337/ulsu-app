@@ -36,6 +36,30 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+
+# Test & Debug Artifacts
+test_shot*.png
+test_screen*.png
+*.log
+
+# Build & Packages
+build/
+*.apk
+*.ipa
+Payload/
+
+# OS & Editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
 # generated native folders
 /ios
 /android
