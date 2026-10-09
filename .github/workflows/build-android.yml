@@ -41,7 +41,8 @@ jobs:
 
       - name: Locate and prepare APKs for release
         run: |
-          mkdir -p release-apks
+          RELEASE_DIR="$GITHUB_WORKSPACE/release-apks"
+          mkdir -p "$RELEASE_DIR"
           cd android/app/build/outputs/apk/release
           for apk in *.apk; do
             if [ -f "$apk" ]; then
@@ -49,11 +50,15 @@ jobs:
               if [ "$dest_name" = "$apk" ]; then
                 dest_name="UlsuNotSmart.apk"
               fi
-              cp "$apk" "../../../../../release-apks/$dest_name"
+              cp "$apk" "$RELEASE_DIR/$dest_name"
               echo "Prepared $dest_name from $apk"
             fi
           done
-          cd ../../../../../
+          if [ -f "$RELEASE_DIR/UlsuNotSmart-universal.apk" ]; then
+            cp "$RELEASE_DIR/UlsuNotSmart-universal.apk" "$RELEASE_DIR/UlsuNotSmart.apk"
+            echo "Created default UlsuNotSmart.apk from universal build"
+          fi
+          cd "$GITHUB_WORKSPACE"
           ls -lh release-apks/
 
       - name: Upload APK Artifacts
