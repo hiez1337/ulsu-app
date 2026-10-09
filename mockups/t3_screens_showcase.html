@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ULSU Schedule • Multi-Device App Screens Showcase</title>
+<style>
+  :root {
+    --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    --font-mono: "SF Mono", "JetBrains Mono", Menlo, monospace;
+    --bg-root: #07090E;
+    --phone-bg: #000000;
+    --phone-border: #2C2C2E;
+    --phone-shadow: 0 20px 48px rgba(0, 0, 0, 0.75), 0 4px 16px rgba(0, 0, 0, 0.6);
+    --accent-blue: #0A84FF;
+    --accent-green: #30D158;
+    --accent-orange: #FF9F0A;
+    --accent-purple: #BF5AF2;
+    --accent-red: #FF453A;
+    --card-surface: #1C1C1E;
+    --card-border: rgba(255, 255, 255, 0.08);
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    color: #FFFFFF;
+    background: var(--bg-root);
+    padding: 12px 14px 24px;
+  }
+
+  /* Header Bar */
+  .showcase-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .pill-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--accent-blue);
+  }
+
+  .pill-badge::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-blue);
+    box-shadow: 0 0 8px var(--accent-blue);
+  }
+
+  .main-title {
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+    color: #FFFFFF;
+  }
+
+  .sub-title {
+    font-size: 12px;
+    color: #8E8E93;
+  }
+
+  .meta-tag {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #A1A1AA;
+    font-weight: 600;
+  }
+
+  /* Multi-Device Grid: 3 columns x 2 rows on desktop */
+  .devices-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px 16px;
+    width: 100%;
+  }
+
+  @media (max-width: 880px) {
+    .devices-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 580px) {
+    .devices-grid {
+      grid-template-columns: 1fr;
+      justify-items: center;
+    }
+  }
+
+  /* Device Column */
+  .device-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+
+  /* iPhone 16 Pro Chassis */
+  .iphone-frame {
+    position: relative;
+    width: 100%;
+    max-width: 232px;
+    height: 486px;
+    background: var(--phone-bg);
+    border-radius: 38px;
+    border: 3.5px solid var(--phone-border);
+    box-shadow: var(--phone-shadow), inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+  }
+
+  /* iOS Status Bar */
+  .status-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 36px;
+    padding: 8px 14px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 600;
+    color: #fff;
+    z-index: 20;
+    pointer-events: none;
+  }
+
+  .status-time {
+    font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+
+  .dynamic-island {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70px;
+    height: 17px;
+    background: #000000;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 5px;
+    z-index: 25;
+  }
+
+  .island-expanded {
+    width: 114px;
+    padding: 0 8px;
+  }
+
+  .island-cam {
+    width: 5px;
+    height: 5px;
+    background: #111;
+    border-radius: 50%;
+    box-shadow: inset 0 0 2px #0A84FF;
+  }
+
+  .status-icons {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 9px;
+  }
+
+  /* Screen Viewport */
+  .screen-viewport {
+    flex: 1;
+    overflow-y: hidden;
+    padding: 38px 10px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    position: relative;
+  }
+
+  /* iOS Home Bar */
+  .home-indicator {
+    position: absolute;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 78px;
+    height: 3.5px;
+    background: rgba(255, 255, 255, 0.45);
+    border-radius: 3px;
+    z-index: 30;
+    pointer-events: none;
+  }
+
+  /* Captions */
+  .caption-box {
+    text-align: center;
+    max-width: 220px;
+  }
+
+  .caption-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #FFFFFF;
+  }
+
+  .caption-desc {
+    font-size: 10.5px;
+    color: #8E8E93;
+    line-height: 1.35;
+    margin-top: 2px;
+  }
+
+  /* App Headers */
+  .app-header-small {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--accent-blue);
+    letter-spacing: 0.5px;
+  }
+
+  .app-header-large {
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    color: #FFFFFF;
+    line-height: 1.2;
+  }
+
+  .app-header-sub {
+    font-size: 10px;
+    color: #8E8E93;
+  }
+
+  /* Common Components */
+  .seg-control {
+    display: flex;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 7px;
+    padding: 2px;
+    gap: 2px;
+  }
+
+  .seg-btn {
+    flex: 1;
+    text-align: center;
+    font-size: 8.5px;
+    font-weight: 700;
+    padding: 3px 0;
+    border-radius: 5px;
+    color: #8E8E93;
+  }
+
+  .seg-btn.active {
+    background: var(--card-surface);
+    color: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  }
+
+  .section-tag {
+    font-size: 8.5px;
+    font-weight: 700;
+    color: #71717A;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-top: 2px;
+  }
+
+  /* Screen 1: Group Selection */
+  .dir-card {
+    background: var(--card-surface);
+    border: 0.5px solid var(--card-border);
+    border-radius: 11px;
+    padding: 7px 9px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .dir-card.active {
+    border-color: var(--accent-blue);
+    background: rgba(10, 132, 255, 0.08);
+  }
+
+  .dir-left {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .dir-badge {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9.5px;
+    font-weight: 800;
+  }
+
+  .dir-name {
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .dir-sub {
+    font-size: 8px;
+    color: #8E8E93;
+  }
+
+  .group-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+  }
+
+  .group-chip {
+    background: var(--card-surface);
+    border: 0.5px solid var(--card-border);
+    border-radius: 8px;
+    padding: 5px 7px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .group-chip.active {
+    border-color: var(--accent-blue);
+    background: rgba(10, 132, 255, 0.12);
+  }
+
+  .group-name {
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .group-meta {
+    font-size: 8px;
+    color: #8E8E93;
+  }
+
+  .btn-primary-hig {
+    background: var(--accent-blue);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 7px;
+    border-radius: 8px;
+    text-align: center;
+    margin-top: auto;
+  }
+
+  /* Screen 2: Schedule View */
+  .day-strip {
+    display: flex;
+    gap: 3px;
+    justify-content: space-between;
+  }
+
+  .day-chip {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 3px 1px;
+    border-radius: 7px;
+    background: rgba(255, 255, 255, 0.04);
+    gap: 1px;
+  }
+
+  .day-chip.active {
+    background: var(--accent-blue);
+  }
+
+  .day-chip-name {
+    font-size: 8px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .day-chip-num {
+    font-size: 10px;
+    font-weight: 800;
+  }
+
+  .sched-card {
+    background: var(--card-surface);
+    border: 0.5px solid var(--card-border);
+    border-radius: 11px;
+    padding: 7px 9px;
+    display: flex;
+    flex-direction: column;
+    gap: 3.5px;
+  }
+
+  .sched-card.live {
+    border-color: rgba(10, 132, 255, 0.6);
+    background: #131A24;
+    box-shadow: 0 0 12px rgba(10, 132, 255, 0.15);
+  }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 8.5px;
+  }
+
+  .card-time {
+    color: #8E8E93;
+    font-weight: 600;
+  }
+
+  .type-badge {
+    padding: 1px 4.5px;
+    border-radius: 3.5px;
+    font-size: 7.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .badge-lec { background: rgba(191, 90, 242, 0.2); color: #D8B4FE; }
+  .badge-lab { background: rgba(48, 209, 88, 0.2); color: #86EFAC; }
+  .badge-sem { background: rgba(255, 159, 10, 0.2); color: #FDE047; }
+
+  .pair-title {
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #FFFFFF;
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 8.5px;
+    color: #A1A1AA;
+  }
+
+  .teach-wrap {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .avatar-mini {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #3A3A3C;
+    font-size: 6.5px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+  }
+
+  .room-tag {
+    font-weight: 600;
+    color: #60A5FA;
+  }
+
+  .live-bar {
+    height: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .live-bar-fill {
+    height: 100%;
+    background: var(--accent-blue);
+    border-radius: 2px;
+  }
+
+  /* Screen 3: Detail Modal */
+  .modal-sheet {
+    background: #1C1C1E;
+    border: 0.5px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    margin-top: auto;
+    box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.7);
+  }
+
+  .sheet-handle {
+    width: 28px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 2px;
+    align-self: center;
+  }
+
+  .detail-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 5px 7px;
+    border-radius: 7px;
+    font-size: 9.5px;
+  }
+
+  .checklist-box {
+    background: rgba(10, 132, 255, 0.08);
+    border: 0.5px solid rgba(10, 132, 255, 0.25);
+    border-radius: 7px;
+    padding: 6px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 8.5px;
+    color: #D1D5DB;
+  }
+
+  /* Screen 4: Weekly Grid */
+  .week-group {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 7px;
+    padding: 4px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5px;
+    border-left: 2.5px solid var(--accent-blue);
+  }
+
+  .week-day-title {
+    font-size: 8.5px;
+    font-weight: 700;
+    color: #93C5FD;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .week-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 8px;
+    color: #E4E4E7;
+    border-top: 0.5px solid rgba(255, 255, 255, 0.05);
+    padding-top: 1.5px;
+  }
+
+  /* Screen 5: Search Screen */
+  .search-box {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 5px 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 9px;
+    color: #8E8E93;
+  }
+
+  .search-input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 9px;
+    outline: none;
+    width: 100%;
+  }
+
+  .dir-item {
+    background: var(--card-surface);
+    border-radius: 8px;
+    padding: 6px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 9px;
+  }
+
+  .room-pill {
+    font-size: 7.5px;
+    font-weight: 700;
+    padding: 1.5px 5px;
+    border-radius: 4px;
+  }
+
+  .room-free {
+    background: rgba(48, 209, 88, 0.15);
+    color: #30D158;
+  }
+
+  .room-busy {
+    background: rgba(255, 69, 58, 0.15);
+    color: #FF453A;
+  }
+
+  /* Screen 6: Settings Screen */
+  .settings-group {
+    background: var(--card-surface);
+    border-radius: 9px;
+    padding: 2px 8px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .settings-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 9px;
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .settings-row:last-child {
+    border-bottom: none;
+  }
+
+  .toggle-switch {
+    width: 26px;
+    height: 15px;
+    background: #30D158;
+    border-radius: 8px;
+    position: relative;
+  }
+
+  .toggle-knob {
+    position: absolute;
+    right: 1.5px;
+    top: 1.5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #fff;
+  }
+</style>
+</head>
+<body>
+
+<div class="showcase-header">
+  <div class="header-left">
+    <div class="pill-badge">T3 Code In-App Showcase</div>
+    <div class="main-title">Мультидевайсный интерфейс расписания УлГУ</div>
+    <div class="sub-title">Стандарты Apple Human Interface Guidelines (HIG) • ФМИАТ УлГУ • Осенний семестр 2026/2027</div>
+  </div>
+  <div class="meta-tag">6 нативных экранов • iPhone 16 Pro</div>
+</div>
+
+<div class="devices-grid">
+
+  <!-- PHONE 1: GROUP SELECTION SCREEN -->
+  <div class="device-col">
+    <div class="iphone-frame">
+      <div class="dynamic-island"><div class="island-cam"></div></div>
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons"><span>5G</span><span>100%</span></div>
+      </div>
+      <div class="screen-viewport">
+        <div>
+          <div class="app-header-small">ФМИАТ • УлГУ</div>
+          <div class="app-header-large">Выбор группы</div>
+          <div class="app-header-sub">3-уровневая иерархия без автовыбора</div>
+        </div>
+
+        <div class="section-tag">1. Направление</div>
+        <div class="dir-card active">
+          <div class="dir-left">
+            <div class="dir-badge" style="background:rgba(10,132,255,0.2); color:#60A5FA;">ПМ</div>
+            <div>
+              <div class="dir-name">Прикладная математика</div>
+              <div class="dir-sub">Кафедра ПМ • 1–4 курсы</div>
+            </div>
+          </div>
+          <span style="color:#0A84FF; font-size:11px;">✓</span>
+        </div>
+
+        <div class="dir-card">
+          <div class="dir-left">
+            <div class="dir-badge" style="background:rgba(48,209,88,0.2); color:#86EFAC;">ИС</div>
+            <div>
+              <div class="dir-name">Информационные системы</div>
+              <div class="dir-sub">Кафедра ИТ • 1–4 курсы</div>
+            </div>
+          </div>
+          <span style="color:#71717A; font-size:10px;">›</span>
+        </div>
+
+        <div class="section-tag">2. Курс обучения</div>
+        <div class="seg-control">
+          <div class="seg-btn active">1 курс</div>
+          <div class="seg-btn">2 курс</div>
+          <div class="seg-btn">3 курс</div>
+          <div class="seg-btn">4 курс</div>
+        </div>
+
+        <div class="section-tag">3. Группа (Устранение бага)</div>
+        <div class="group-grid">
+          <div class="group-chip active">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="group-name">ПМ-О-26/1</span>
+              <span style="color:#0A84FF; font-size:9px;">✓</span>
+            </div>
+            <span class="group-meta">26 студ. • 1 смена</span>
+          </div>
+          <div class="group-chip">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="group-name">ПМ-О-26/2</span>
+              <span style="color:#8E8E93; font-size:9px;">›</span>
+            </div>
+            <span class="group-meta">24 студ. • 1 смена</span>
+          </div>
+        </div>
+
+        <div class="btn-primary-hig">Открыть расписание</div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+    <div class="caption-box">
+      <div class="caption-title">1. Выбор группы</div>
+      <div class="caption-desc">3-уровневый выбор (направление, курс, группа). Устранен дефект скрытия параллельных групп.</div>
+    </div>
+  </div>
+
+  <!-- PHONE 2: SCHEDULE SCREEN -->
+  <div class="device-col">
+    <div class="iphone-frame">
+      <div class="dynamic-island"><div class="island-cam"></div></div>
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons"><span>5G</span><span>100%</span></div>
+      </div>
+      <div class="screen-viewport">
+        <div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div class="app-header-small">ПМ-О-26/1</div>
+            <div class="seg-control" style="width:100px;">
+              <div class="seg-btn active">1 Неделя</div>
+              <div class="seg-btn">2 Нед.</div>
+            </div>
+          </div>
+          <div class="app-header-large">Вторник, 13 окт</div>
+        </div>
+
+        <div class="seg-control">
+          <div class="seg-btn active">Все (4)</div>
+          <div class="seg-btn">1 подгруппа</div>
+          <div class="seg-btn">2 подгруппа</div>
+        </div>
+
+        <div class="day-strip">
+          <div class="day-chip"><span class="day-chip-name">Пн</span><span class="day-chip-num">12</span></div>
+          <div class="day-chip active"><span class="day-chip-name">Вт</span><span class="day-chip-num">13</span></div>
+          <div class="day-chip"><span class="day-chip-name">Ср</span><span class="day-chip-num">14</span></div>
+          <div class="day-chip"><span class="day-chip-name">Чт</span><span class="day-chip-num">15</span></div>
+          <div class="day-chip"><span class="day-chip-name">Пт</span><span class="day-chip-num">16</span></div>
+          <div class="day-chip"><span class="day-chip-name">Сб</span><span class="day-chip-num">17</span></div>
+        </div>
+
+        <div class="sched-card">
+          <div class="card-top">
+            <span class="card-time">08:00 – 09:20 • 1 пара</span>
+            <span class="type-badge badge-sem">Семинар</span>
+          </div>
+          <div class="pair-title">Информатика и программирование</div>
+          <div class="card-footer">
+            <div class="teach-wrap">
+              <div class="avatar-mini">БВ</div>
+              <span>В.Г. Бурмистрова</span>
+            </div>
+            <span class="room-tag">ауд. 3/316</span>
+          </div>
+        </div>
+
+        <div class="sched-card live">
+          <div class="card-top">
+            <span class="card-time" style="color:#60A5FA; font-weight:700;">09:30 – 10:50 • Идет пара (35м)</span>
+            <span class="type-badge badge-lab">Лаб 1п</span>
+          </div>
+          <div class="live-bar"><div class="live-bar-fill" style="width: 58%;"></div></div>
+          <div class="pair-title">1С: Предприятие для разработчиков</div>
+          <div class="card-footer">
+            <div class="teach-wrap">
+              <div class="avatar-mini" style="background:#0A84FF;">НН</div>
+              <span>Н.Н. Нечаева</span>
+            </div>
+            <span class="room-tag">лаб. 3/118</span>
+          </div>
+        </div>
+
+        <div class="sched-card">
+          <div class="card-top">
+            <span class="card-time">11:00 – 12:20 • 3 пара</span>
+            <span class="type-badge badge-sem">Семинар</span>
+          </div>
+          <div class="pair-title">Математический анализ</div>
+          <div class="card-footer">
+            <div class="teach-wrap">
+              <div class="avatar-mini">ФЮ</div>
+              <span>Ю.Ю. Фролова</span>
+            </div>
+            <span class="room-tag">ауд. 332</span>
+          </div>
+        </div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+    <div class="caption-box">
+      <div class="caption-title">2. Дневное расписание</div>
+      <div class="caption-desc">Горизонтальный календарь, фильтр подгрупп и визуальный таймер активного занятия.</div>
+    </div>
+  </div>
+
+  <!-- PHONE 3: LESSON DETAIL SHEET -->
+  <div class="device-col">
+    <div class="iphone-frame">
+      <div class="dynamic-island island-expanded">
+        <span style="font-size:7.5px; color:#30D158; font-weight:700;">● 1С: Лаб</span>
+        <span style="font-size:7.5px; color:#8E8E93;">35м ост.</span>
+      </div>
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons"><span>5G</span><span>100%</span></div>
+      </div>
+      <div class="screen-viewport" style="background:rgba(0,0,0,0.55);">
+        <div class="modal-sheet">
+          <div class="sheet-handle"></div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="type-badge badge-lab">Лабораторная работа</span>
+            <span style="font-size:8.5px; color:#8E8E93;">2 пара • 09:30–10:50</span>
+          </div>
+          <div style="font-size:12px; font-weight:800; color:#fff; line-height:1.2;">
+            1С: Предприятие для разработчиков
+          </div>
+
+          <div class="detail-row">
+            <div class="avatar-mini" style="width:20px; height:20px; font-size:8px; background:#0A84FF;">НН</div>
+            <div>
+              <div style="font-weight:700; color:#fff;">Нечаева Надежда Николаевна</div>
+              <div style="font-size:8px; color:#8E8E93;">Доцент каф. информационных технологий • ФМИАТ</div>
+            </div>
+          </div>
+
+          <div class="detail-row">
+            <span style="font-size:12px;">📍</span>
+            <div>
+              <div style="font-weight:700; color:#93C5FD;">Аудитория 3/118 (Лаборатория 1С)</div>
+              <div style="font-size:8px; color:#8E8E93;">Корпус 3 • 1 этаж, правое крыло</div>
+            </div>
+          </div>
+
+          <div class="checklist-box">
+            <span style="color:#60A5FA; font-weight:700; font-size:8.5px;">✓ Задачи и домашнее задание:</span>
+            <div class="check-item">
+              <span style="color:#30D158;">☑</span>
+              <span>Изучить регистры сведений (Выполнено)</span>
+            </div>
+            <div class="check-item">
+              <span style="color:#8E8E93;">☐</span>
+              <span>Настроить проведение документа "Накладная"</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+    <div class="caption-box">
+      <div class="caption-title">3. Детали занятия & Задачи</div>
+      <div class="caption-desc">Dynamic Island виджет вверху, модальная шторка, преподаватель, аудитория и чек-лист дз.</div>
+    </div>
+  </div>
+
+  <!-- PHONE 4: WEEKLY GRID SCREEN -->
+  <div class="device-col">
+    <div class="iphone-frame">
+      <div class="dynamic-island"><div class="island-cam"></div></div>
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons"><span>5G</span><span>100%</span></div>
+      </div>
+      <div class="screen-viewport">
+        <div>
+          <div class="app-header-small">ПМ-О-26/1 • 1 НЕДЕЛЯ</div>
+          <div class="app-header-large">Сетка недели</div>
+          <div class="app-header-sub">Полная учебная нагрузка понедельник–суббота</div>
+        </div>
+
+        <div class="week-group" style="border-left-color:#0A84FF;">
+          <div class="week-day-title"><span>ПОНЕДЕЛЬНИК</span><span>3 пары</span></div>
+          <div class="week-row"><span style="font-weight:600;">#2 Алгебра и геометрия</span><span>332</span></div>
+          <div class="week-row"><span style="font-weight:600;">#3 Информатика (лаб)</span><span>503</span></div>
+          <div class="week-row"><span style="font-weight:600;">#4 Программир. Python</span><span>3/127</span></div>
+        </div>
+
+        <div class="week-group" style="border-left-color:#30D158;">
+          <div class="week-day-title" style="color:#86EFAC;"><span>ВТОРНИК</span><span>4 пары</span></div>
+          <div class="week-row"><span style="font-weight:600;">#1 Информатика и прогр.</span><span>3/316</span></div>
+          <div class="week-row"><span style="font-weight:600;">#2 1С: Предприятие (1п)</span><span>3/118</span></div>
+          <div class="week-row"><span style="font-weight:600;">#3 Математический анализ</span><span>332</span></div>
+          <div class="week-row"><span style="font-weight:600;">#4 Информатика (лек)</span><span>332</span></div>
+        </div>
+
+        <div class="week-group" style="border-left-color:#FF9F0A;">
+          <div class="week-day-title" style="color:#FDE047;"><span>СРЕДА</span><span>3 пары</span></div>
+          <div class="week-row"><span style="font-weight:600;">#1 Дискретная матем.</span><span>332</span></div>
+          <div class="week-row"><span style="font-weight:600;">#2 Алгебра и геометрия</span><span>3/418</span></div>
+          <div class="week-row"><span style="font-weight:600;">#3 Математический анализ</span><span>3/316</span></div>
+        </div>
+
+        <div class="week-group" style="border-left-color:#BF5AF2;">
+          <div class="week-day-title" style="color:#D8B4FE;"><span>ЧЕТВЕРГ</span><span>3 пары</span></div>
+          <div class="week-row"><span style="font-weight:600;">#1 Физкультура и спорт</span><span>С/к</span></div>
+          <div class="week-row"><span style="font-weight:600;">#2 Аппаратные средства</span><span>332</span></div>
+          <div class="week-row"><span style="font-weight:600;">#3 История России</span><span>2/26</span></div>
+        </div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+    <div class="caption-box">
+      <div class="caption-title">4. Сетка всей недели</div>
+      <div class="caption-desc">Компактный 6-дневный матричный обзор расписания без длинного вертикального скролла.</div>
+    </div>
+  </div>
+
+  <!-- PHONE 5: SEARCH SCREEN -->
+  <div class="device-col">
+    <div class="iphone-frame">
+      <div class="dynamic-island"><div class="island-cam"></div></div>
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons"><span>5G</span><span>100%</span></div>
+      </div>
+      <div class="screen-viewport">
+        <div>
+          <div class="app-header-small">СПРАВОЧНИК • УлГУ</div>
+          <div class="app-header-large">Поиск и аудитории</div>
+        </div>
+
+        <div class="search-box">
+          <span>🔍</span>
+          <input type="text" class="search-input" value="Санников" readonly>
+        </div>
+
+        <div class="seg-control">
+          <div class="seg-btn">Все</div>
+          <div class="seg-btn active">Преподаватели</div>
+          <div class="seg-btn">Аудитории</div>
+          <div class="seg-btn">Свободные</div>
+        </div>
+
+        <div class="section-tag">Преподаватели</div>
+        <div class="dir-item">
+          <div>
+            <div style="font-weight:700; color:#fff;">Санников И.А.</div>
+            <div style="font-size:8px; color:#8E8E93;">Доцент каф. ИТ • лек. 332, лаб. 601</div>
+          </div>
+          <span style="color:#0A84FF; font-size:9.5px; font-weight:700;">Расписание ›</span>
+        </div>
+
+        <div class="section-tag">Свободные аудитории сейчас (10:00)</div>
+        <div class="dir-item">
+          <div>
+            <span style="color:#30D158; font-weight:700;">● 3/211</span>
+            <span style="color:#8E8E93; font-size:8px; margin-left:3px;">до 14:05 • 3 корпус</span>
+          </div>
+          <span class="room-pill room-free">СВОБОДНА</span>
+        </div>
+
+        <div class="dir-item">
+          <div>
+            <span style="color:#30D158; font-weight:700;">● 3/420</span>
+            <span style="color:#8E8E93; font-size:8px; margin-left:3px;">до 12:45 • 3 корпус</span>
+          </div>
+          <span class="room-pill room-free">СВОБОДНА</span>
+        </div>
+
+        <div class="dir-item">
+          <div>
+            <span style="color:#FF453A; font-weight:700;">● 332</span>
+            <span style="color:#8E8E93; font-size:8px; margin-left:3px;">до 10:50: Лекция 1С</span>
+          </div>
+          <span class="room-pill room-busy">ЗАНЯТА</span>
+        </div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+    <div class="caption-box">
+      <div class="caption-title">5. Поиск и свободные залы</div>
+      <div class="caption-desc">Полнотекстовый поиск по преподавателям и детектор свободных кабинетов в реальном времени.</div>
+    </div>
+  </div>
+
+  <!-- PHONE 6: SETTINGS SCREEN -->
+  <div class="device-col">
+    <div class="iphone-frame">
+      <div class="dynamic-island"><div class="island-cam"></div></div>
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons"><span>5G</span><span>100%</span></div>
+      </div>
+      <div class="screen-viewport">
+        <div>
+          <div class="app-header-small">ПАРАМЕТРЫ ПРИЛОЖЕНИЯ</div>
+          <div class="app-header-large">Настройки</div>
+        </div>
+
+        <div class="section-tag">Оформление</div>
+        <div class="settings-group">
+          <div class="settings-row">
+            <span>Тема интерфейса</span>
+            <div class="seg-control" style="width:105px;">
+              <div class="seg-btn active">OLED</div>
+              <div class="seg-btn">Charcoal</div>
+            </div>
+          </div>
+          <div class="settings-row">
+            <span>Цвет акцента</span>
+            <span style="color:#0A84FF; font-weight:700;">● Сапфир</span>
+          </div>
+        </div>
+
+        <div class="section-tag">Расписание</div>
+        <div class="settings-group">
+          <div class="settings-row">
+            <span>Подгруппа по умолч.</span>
+            <div class="seg-control" style="width:85px;">
+              <div class="seg-btn">Все</div>
+              <div class="seg-btn active">1п</div>
+              <div class="seg-btn">2п</div>
+            </div>
+          </div>
+          <div class="settings-row">
+            <span>Авто-определение недели</span>
+            <div class="toggle-switch"><div class="toggle-knob"></div></div>
+          </div>
+        </div>
+
+        <div class="section-tag">Уведомления</div>
+        <div class="settings-group">
+          <div class="settings-row">
+            <span>Напоминать за 15 мин</span>
+            <div class="toggle-switch"><div class="toggle-knob"></div></div>
+          </div>
+        </div>
+
+        <div class="section-tag">Система</div>
+        <div class="settings-group">
+          <div class="settings-row">
+            <span>Офлайн-кэш</span>
+            <span style="color:#30D158; font-weight:700;">● Активен (42 КБ)</span>
+          </div>
+          <div class="settings-row">
+            <span style="color:#8E8E93;">Версия приложения</span>
+            <span style="color:#fff; font-weight:600;">v1.3.0 (Build 42)</span>
+          </div>
+        </div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+    <div class="caption-box">
+      <div class="caption-title">6. Настройки & Уведомления</div>
+      <div class="caption-desc">Переключатель темы OLED, выбор подгруппы по умолчанию, напоминания за 15 минут до пары.</div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,317 +1,102 @@
-# 📱 UlsuNotSmart
+# 📱 Расписание УлГУ (UlsuNotSmart v2.0.0)
 
 <div align="center">
+  <img src="assets/showcase_github.png" width="100%" alt="ULSU App Showcase" />
+  
+  <br />
 
-**Мобильное приложение для просмотра расписания занятий УлГУ**
-
-[![React Native](https://img.shields.io/badge/React_Native-0.81-61DAFB?logo=react)](https://reactnative.dev/)
-[![Expo](https://img.shields.io/badge/Expo-SDK_54-000020?logo=expo)](https://expo.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript)](https://www.typescriptlang.org/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-
+  [![Release](https://img.shields.io/badge/Release-v2.0.0--redesign-blue.svg)](https://github.com/Ak417ytrfg/ulsu-app/releases)
+  [![React Native](https://img.shields.io/badge/React_Native-0.79.5-61DAFB?logo=react)](https://reactnative.dev/)
+  [![Expo](https://img.shields.io/badge/Expo-SDK_53-000020?logo=expo)](https://expo.dev/)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-3178C6?logo=typescript)](https://www.typescriptlang.org/)
+  [![Design](https://img.shields.io/badge/Design-Apple_HIG_iOS_18-black?logo=apple)](https://developer.apple.com/design/human-interface-guidelines/)
+  [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 </div>
 
 ---
 
-## 📖 Описание
+## 📖 Обзор проекта
 
-**UlsuNotSmart** — современное кроссплатформенное приложение для студентов Ульяновского государственного университета. Приложение отображает расписание занятий в удобном формате с автоматическим определением текущей учебной недели, живыми прогресс-барами текущих пар и тёмной темой в стиле iOS.
+**Расписание УлГУ** — высокопроизводительное мобильное приложение для студентов и преподавателей факультета математики, информационных и авиационных технологий (ФМИАТ) Ульяновского государственного университета.
 
-> 📌 **Текущая версия: 1.2.0** | Android APK: 22 МБ | ~37 групп
-
-### ✨ Основные возможности
-
-- 🗓️ **Автоматическое определение недели** — приложение само распознаёт, какая сейчас идёт неделя (1-я или 2-я) по академическому календарю УлГУ (от 1 сентября, чередование без сброса между семестрами)
-- 📊 **Живой прогресс-бар** — анимированный индикатор прогресса текущей пары с градиентной заливкой в цвете дня, обновляется каждые 30 секунд
-- 🔄 **Pull-to-refresh** — обновление определения недели простым свайпом вниз
-- 🎨 **Тёмная тема** — стильный дизайн в стиле Apple iOS с градиентами и плавными анимациями
-- 📍 **Цветовое кодирование дней** — каждый день недели имеет свой уникальный цвет для быстрой визуальной навигации
-- 🏷️ **Бейдж "Сегодня"** — автоматическое выделение текущего дня с авто-прокруткой к нему
-- 💾 **Запоминание группы** — последняя выбранная группа сохраняется и открывается при следующем запуске
-- 📱 **Полный офлайн-режим** — расписание работает без интернета, все данные встроены в приложение
-- ⚡ **Оптимизированный размер** — APK всего 22 МБ благодаря сборке под arm64 + R8 минификации
+Версия **v2.0.0** представляет собой полный редизайн приложения в соответствии со стандартами **Apple iOS 18 Human Interface Guidelines**, палитрой **OLED Pitch Black** (`#000000`), тактильной отдачей **Haptic Feedback** и расширенной архитектурой из **6 ключевых экранов**.
 
 ---
 
-## �️ Архитектура
+## 📱 Сводка экранов и возможностей
 
+| Экран | Скриншот | Ключевой функционал | Реализованные компоненты |
+|:---|:---:|:---|:---|
+| **1. Выбор группы** | [Просмотр](assets/screenshots/1_group_selection.png) | 3-уровневая селекция (Кафедра → Курс → Группа), разворачиваемый каталог 12 направлений, метаданные групп. | `GroupSelectionScreen.tsx`, `LinearGradient`, чипы с тактильным откликом |
+| **2. Дневное расписание** | [Просмотр](assets/screenshots/2_schedule_day.png) | Карусель дат с индикаторами нагрузки, переключатель четности недель, бейджи типов занятий, таймер и статус пары в реальном времени. | `ScheduleScreen.tsx`, карусель дней, `PulseDot`, фильтр подгрупп |
+| **3. Детали занятия** | [Просмотр](assets/screenshots/3_lesson_detail.png) | Адаптивный Form Sheet модал с жестом смахивания, карточки преподавателя и аудитории, чеклист домашних заданий и персональных заметок. | `LessonDetailSheet.tsx`, `PanResponder`, `AsyncStorage` задачи |
+| **4. Сетка недели** | [Просмотр](assets/screenshots/4_weekly_grid.png) | Компактная 6-дневная матрица нагрузки (Пн–Сб) для быстрой оценки недели, подсчет пар, цветовое кодирование дней. | `WeeklyGridScreen.tsx`, расчет недельной нагрузки, бейджи пар |
+| **5. Поиск и аудитории** | [Просмотр](assets/screenshots/5_search_rooms.png) | Справочник преподавателей с расчетом нагрузки, монитор занятости аудиторий в реальном времени, всплывающее расписание кабинетов. | `SearchScreen.tsx`, кешированные алгоритмы поиска $O(1)$, статус-точки |
+| **6. Настройки** | [Просмотр](assets/screenshots/6_settings.png) | Переключение темы (OLED / Charcoal), выбор подгруппы по умолчанию, индикатор офлайн-кэша, сброс группы с подтверждением. | `SettingsScreen.tsx`, системные тумблеры `Switch`, статус синхронизации |
+
+---
+
+## 🛠️ Технологический стек и архитектура
+
+### Дизайн-система Apple HIG & Оптимизация OLED
+- **Цветовая палитра**: Абсолютно черный базовый фон `#000000` для максимальной экономии энергии на OLED/Super Retina дисплеях. Поднятые поверхности карточек `#1C1C1E` и сгруппированные списки `#2C2C2E`.
+- **Эргономика сенсорных зон**: Все кнопки, чипы и ячейки соответствуют стандарту Apple HIG $\ge 44 \times 44$ pt (прямой размер или расширение через `hitSlop`).
+- **Стекло и размытие**: Нативная панель навигации с эффектом акрилового стекла через `expo-blur` (`UIBlurEffectStyleSystemChromeMaterialDark`).
+- **Тактильная отдача**: Селекторы, переключатели и подтверждения сопровождаются откликом `expo-haptics` (`Light`, `Medium`, `NotificationFeedbackType.Warning`).
+
+### Двухуровневая гибридная архитектура (Two-Tier Hybrid Architecture)
+```text
+┌─────────────────────────────────┐       ┌─────────────────────────────────┐
+│   Static Normalized Dataset     │       │     Local Device Storage        │
+│   src/data/schedule.json        │       │         AsyncStorage            │
+├─────────────────────────────────┤       ├─────────────────────────────────┤
+│ • 37 академических групп        │       │ • Выбранная группа              │
+│ • 1 193 нормализованных занятия │       │ • Подгруппа по умолчанию        │
+│ • Данные преподавателей и залов │       │ • Личные задачи и заметки к пар.│
+│ • 100% Офлайн без задержек      │       │ • Настройки темы и интерфейса   │
+└─────────────────────────────────┘       └─────────────────────────────────┘
 ```
-Excel (.xlsx) → convert_schedule_v2.py → src/data/schedule.json → App.tsx → Screens
-```
-
-- **Без бэкенда** — все данные расписания хранятся в статическом JSON, встроенном в приложение
-- **Конвертер** — Python-скрипт `convert_schedule_v2.py` (openpyxl) парсит Excel-файл с автоопределением строк заголовков и колонок групп
-- **Навигация** — реализована через состояние (`useState`), без react-navigation
-- **Хранение** — `AsyncStorage` для сохранения последней выбранной группы
-
-### Экраны приложения
-
-| Экран | Файл | Описание |
-|-------|------|----------|
-| Выбор группы | `GroupSelectionScreen.tsx` | 2-уровневый выбор: направление → курс (автовыбор группы) |
-| Расписание | `ScheduleScreen.tsx` | Карточки дней, переключатель недель, прогресс-бар, pull-to-refresh |
 
 ---
 
-## 🛠️ Технологический стек
+## 🚀 Установка и запуск
 
-### Frontend
-- **React Native 0.81** — кроссплатформенная разработка
-- **Expo SDK 54** — инструментарий для быстрой разработки
-- **TypeScript 5** — типизация и безопасность кода
-- **React 19.1** — последняя версия библиотеки
+### Требования
+- **Node.js** $\ge 18.0.0$
+- **npm** или **yarn**
+- Приложение **Expo Go** на физическом устройстве (iOS / Android) или симулятор
 
-### Библиотеки
-- `expo-linear-gradient` — градиентные фоны
-- `expo-haptics` — тактильная отдача
-- `expo-blur` — эффекты размытия
-- `@expo/vector-icons` (Ionicons) — иконки
-- `react-native-safe-area-context` — безопасная зона для notch
-- `@react-native-async-storage/async-storage` — локальное хранилище
-
-### Конвейер данных
-- **Python 3.12** + openpyxl — конвертация Excel → JSON
-
-### DevOps
-- **Gradle 8.14** — сборка Android (arm64-v8a)
-- **R8 Proguard** — минификация, обфускация, shrink resources
-- **GitHub Actions** — CI/CD для сборки iOS IPA (unsigned, `.github/workflows/build-ios.yml`)
-
----
-
-## 📦 Установка и запуск
-
-### Предварительные требования
-- Node.js 18+ и npm
-- Expo CLI: `npm install -g expo-cli`
-- **Для Android**: Android Studio + JDK 17
-- **Для iOS**: macOS + Xcode 15+
-
-### Клонирование репозитория
+### 1. Клонирование репозитория
 ```bash
-git clone https://github.com/hiez1337/ulsu-app.git
+git clone https://github.com/Ak417ytrfg/ulsu-app.git
 cd ulsu-app
 ```
 
-### Установка зависимостей
+### 2. Установка зависимостей
 ```bash
 npm install
 ```
 
-### Запуск в режиме разработки
+### 3. Запуск сервера разработки
 ```bash
-# Запуск Metro Bundler
-npm start
-
-# Запуск на Android-эмуляторе
-npm run android
-
-# Запуск на iOS-симуляторе (только macOS)
-npm run ios
-
-# Веб-версия
-npm run web
+npx expo start
 ```
+- Для запуска на **iOS**: нажмите `i` в терминале или отсканируйте QR-код в приложении камеры.
+- Для запуска на **Android**: нажмите `a` в терминале или отсканируйте QR-код в приложении Expo Go.
+- Для запуска в **веб-браузере**: нажмите `w` в терминале.
 
----
-
-## 🏗️ Сборка production-версии
-
-### Android APK
-
-#### Вариант 1: Через Expo
+### 4. Проверка типов и сборка
 ```bash
-# Сборка через EAS Build (требуется аккаунт Expo)
-npx eas build --platform android --profile production
+# Статическая проверка типов TypeScript
+npx tsc --noEmit
+
+# Экспорт статического веб-бандла
+npx expo export -p web
 ```
-
-#### Вариант 2: Локальная сборка
-```bash
-# 1. Генерация нативного кода
-npx expo prebuild --platform android --clean
-
-# 2. Применение оптимизаций (arm64 + R8)
-# Открыть android/gradle.properties и установить:
-# reactNativeArchitectures=arm64-v8a
-# org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m
-
-# 3. Сборка APK
-cd android
-$env:JAVA_HOME="C:\Program Files\Java\jdk-17"  # Windows
-# или export JAVA_HOME=/path/to/jdk-17         # macOS/Linux
-./gradlew assembleRelease
-
-# APK будет в: android/app/build/outputs/apk/release/UlsuNotSmart_1.2.apk
-```
-
-### iOS IPA
-```bash
-# Через GitHub Actions (рекомендуется)
-# Запустить workflow "Build iOS IPA (unsigned)" вручную через GitHub
-# IPA доступен как артефакт в Actions → скачать → установить через AltStore/Sideloadly
-
-# Или локально на macOS:
-npx expo prebuild --platform ios --clean
-cd ios && pod install
-WORKSPACE=$(ls -d *.xcworkspace | head -1)
-SCHEME=$(basename "$WORKSPACE" .xcworkspace)
-xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" -configuration Release \
-  CODE_SIGNING_ALLOWED=NO -sdk iphoneos archive
-```
-
----
-
-## 📂 Структура проекта
-
-```
-ulsu-app/
-├── src/
-│   ├── api/
-│   │   └── parser.ts               # TypeScript-интерфейсы (ScheduleItem, DaySchedule)
-│   ├── data/
-│   │   └── schedule.json           # Расписание в формате JSON (~37 групп, из Excel)
-│   ├── screens/
-│   │   ├── GroupSelectionScreen.tsx # Экран выбора группы (2-уровневый)
-│   │   └── ScheduleScreen.tsx      # Экран расписания с прогресс-барами
-│   ├── utils/
-│   │   └── weekDetector.ts         # Автоопределение учебной недели
-│   └── theme.ts                    # Цветовая схема и константы дизайна (Apple dark)
-├── .github/
-│   ├── copilot-instructions.md     # Инструкции для AI-агентов
-│   └── workflows/
-│       └── build-ios.yml           # GitHub Actions: сборка iOS IPA
-├── assets/                         # Иконки и изображения
-├── android/                        # Нативный Android код (генерируется prebuild)
-├── ios/                            # Нативный iOS код (генерируется prebuild)
-├── App.tsx                         # Точка входа, state management, роутинг
-├── app.json                        # Конфигурация Expo
-├── package.json                    # Зависимости проекта
-└── tsconfig.json                   # Конфигурация TypeScript
-```
-
----
-
-## 🔧 Конфигурация
-
-### Версионирование
-Версии задаются в **двух** местах (оба нужно обновлять):
-- `app.json` → `version` (для Expo, формат семвер)
-- `android/app/build.gradle` → `versionCode` (число, инкрементировать) и `versionName`
-
-### Оптимизации APK (post-prebuild патчи)
-
-> ⚠️ Эти настройки **сбрасываются** при каждом `npx expo prebuild --clean` и должны быть переприменены
-
-В `android/gradle.properties`:
-```properties
-reactNativeArchitectures=arm64-v8a           # Только 64-бит (22 МБ vs 67 МБ с 4 архитектурами)
-org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m  # Больше памяти для R8
-```
-
-В `android/app/build.gradle`:
-```gradle
-enableMinifyInReleaseBuilds = (... ?: true)  # R8 минификация включена
-```
-
----
-
-## 🎨 Дизайн-система
-
-### Цветовая палитра
-```typescript
-accent: '#0A84FF'           // Основной синий (iOS-стиль)
-bg: '#000000'               // Фон
-bgCard: '#1C1C1E'           // Карточки
-textPrimary: '#FFFFFF'      // Основной текст
-textSecondary: 'rgba(235, 235, 245, 0.6)'  // Вторичный текст
-```
-
-### Цвета дней недели
-- 🟦 Понедельник — `#0A84FF` (синий)
-- 🟩 Вторник — `#30D158` (зелёный)
-- 🟧 Среда — `#FF9F0A` (оранжевый)
-- 🟪 Четверг — `#BF5AF2` (фиолетовый)
-- 🟥 Пятница — `#FF453A` (красный)
-- 🟨 Суббота — `#FFD60A` (жёлтый)
-
----
-
-## 📝 Changelog
-
-### v1.2.0 (17.02.2026)
-- ✨ Добавлен живой прогресс-бар для текущей пары
-- 🎨 Градиентная заливка прогресс-бара по цвету дня
-- ⏱️ Автообновление каждые 30 секунд
-- 🎯 Подсветка активной пары жирным текстом и цветным бейджем
-
-### v1.1.0 (16.02.2026)
-- 🐛 Исправлен баг с отображением бейджа "Сегодня" на неправильной неделе
-- 🔄 Добавлен pull-to-refresh для обновления недели
-- 📦 Оптимизирован размер APK: 67 МБ → 22 МБ (arm64 + R8)
-- 🗑️ Удалены неиспользуемые зависимости (axios, cheerio, webview)
-
-### v1.0.0 (15.02.2026)
-- 🎉 Первый релиз
-- 📅 Автоматическое определение учебной недели
-- 📱 Тёмная тема в стиле iOS
-- 🏷️ Цветовое кодирование дней недели
-- 📴 Полная поддержка офлайн-режима
-
----
-
-## 📋 Конвейер данных
-
-При изменении Excel-файла с расписанием:
-```bash
-cd "D:\ULSU PROJECT"
-python convert_schedule_v2.py
-```
-- **Python 3.12** + openpyxl
-- Excel содержит 16 листов (курсы 1-5, магистратура, специалитет, недели 1 и 2)
-- Листы с `-2` или `IIн` в названии = неделя 2
-- Структура JSON: `{ Категория → Курс → Группа → Неделя("1"|"2") → День → [{num, time, text}] }`
-
----
-
-## 🤝 Вклад в проект
-
-Мы приветствуем любые улучшения! Пожалуйста:
-
-1. Форкните репозиторий
-2. Создайте ветку для фичи: `git checkout -b feature/amazing-feature`
-3. Зафиксируйте изменения: `git commit -m 'Add amazing feature'`
-4. Отправьте в ветку: `git push origin feature/amazing-feature`
-5. Откройте Pull Request
-
-### Требования к коду
-- TypeScript без ошибок
-- Все цвета и размеры из `src/theme.ts`
-- Все пользовательские строки на русском языке
 
 ---
 
 ## 📄 Лицензия
 
-Этот проект распространяется под лицензией MIT. Подробности в файле [LICENSE](LICENSE).
-
----
-
-## 👤 Автор
-
-**hiez1337**
-- GitHub: [@hiez1337](https://github.com/hiez1337)
-- Проект: [ulsu-app](https://github.com/hiez1337/ulsu-app)
-
----
-
-## 🙏 Благодарности
-
-- [Expo Team](https://expo.dev/) — за отличный фреймворк
-- [React Native Community](https://reactnative.dev/) — за мощную платформу
-- Студентам УлГУ — за идеи и фидбек
-
----
-
-<div align="center">
-Made with ❤️ for ULSU students
-</div>
+Проект распространяется под лицензией [MIT](LICENSE).
+Разработано для студентов и преподавателей Ульяновского государственного университета.

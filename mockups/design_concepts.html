@@ -1,0 +1,2543 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ULSU Schedule • UI/UX Design Concepts</title>
+  <style>
+    :root {
+      --bg-desktop: #0B0C10;
+      --bg-panel: #13151D;
+      --panel-border: rgba(255, 255, 255, 0.09);
+      --text-main: #F3F4F6;
+      --text-muted: #9CA3AF;
+      --accent-blue: #0A84FF;
+      --accent-cyan: #06B6D4;
+      --accent-purple: #8B5CF6;
+      --accent-green: #10B981;
+      --accent-amber: #F59E0B;
+      --accent-rose: #F43F5E;
+      --font-system: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      --font-mono: "SF Mono", "JetBrains Mono", "Menlo", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: var(--font-system);
+      background-color: var(--bg-desktop);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Top Studio Bar */
+    .studio-bar {
+      background: rgba(19, 21, 29, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--panel-border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-badge {
+      background: linear-gradient(135deg, #0A84FF 0%, #5E5CE6 100%);
+      color: #fff;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      letter-spacing: 0.5px;
+    }
+
+    .brand-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .brand-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .concept-nav {
+      display: flex;
+      background: #0E1017;
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 4px;
+      gap: 4px;
+    }
+
+    .concept-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-family: var(--font-system);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .concept-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .concept-btn.active {
+      background: var(--accent-blue);
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(10, 132, 255, 0.35);
+    }
+
+    .studio-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .toggle-pill {
+      display: flex;
+      align-items: center;
+      background: #181B24;
+      border: 1px solid var(--panel-border);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+      user-select: none;
+      gap: 8px;
+    }
+
+    .toggle-pill input {
+      cursor: pointer;
+      accent-color: var(--accent-blue);
+    }
+
+    /* Main Workbench */
+    .workbench {
+      flex: 1;
+      display: flex;
+      padding: 30px;
+      gap: 32px;
+      max-width: 1600px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* Design Specs & Notes Sidebar */
+    .specs-panel {
+      width: 380px;
+      background: var(--bg-panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      height: fit-content;
+      position: sticky;
+      top: 90px;
+    }
+
+    .specs-header {
+      border-bottom: 1px solid var(--panel-border);
+      padding-bottom: 16px;
+    }
+
+    .specs-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .specs-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .feature-item {
+      display: flex;
+      gap: 12px;
+      font-size: 13px;
+      line-height: 1.4;
+      color: #D1D5DB;
+    }
+
+    .feature-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .metric-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--panel-border);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .metric-val {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      font-family: var(--font-mono);
+    }
+
+    .metric-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .interactive-legend {
+      background: rgba(10, 132, 255, 0.08);
+      border: 1px solid rgba(10, 132, 255, 0.2);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 12px;
+      color: #93C5FD;
+      line-height: 1.5;
+    }
+
+    /* Device Preview Container */
+    .preview-stage {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      position: relative;
+    }
+
+    /* iPhone 16 Pro Mockup Frame */
+    .iphone-frame {
+      width: 412px;
+      height: 870px;
+      background: #000;
+      border-radius: 54px;
+      box-shadow: 
+        0 0 0 12px #1C1D22,
+        0 0 0 14px #2D2F36,
+        0 30px 80px rgba(0, 0, 0, 0.8),
+        0 10px 30px rgba(0, 0, 0, 0.6);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      border: 3px solid rgba(255, 255, 255, 0.08);
+      user-select: none;
+    }
+
+    /* Dynamic Island */
+    .dynamic-island {
+      position: absolute;
+      top: 11px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 122px;
+      height: 35px;
+      background: #000;
+      border-radius: 20px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      cursor: pointer;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+
+    .island-pill-active {
+      width: 250px;
+      height: 48px;
+      border-radius: 26px;
+      background: #11141A;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
+      padding: 0 14px;
+    }
+
+    .island-camera {
+      width: 11px;
+      height: 11px;
+      background: #080A10;
+      border-radius: 50%;
+      box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.2);
+    }
+
+    .island-sensor {
+      width: 10px;
+      height: 10px;
+      background: #06080D;
+      border-radius: 50%;
+    }
+
+    .island-live-content {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .island-pill-active .island-live-content {
+      display: flex;
+    }
+
+    .island-pill-active .island-camera,
+    .island-pill-active .island-sensor {
+      display: none;
+    }
+
+    /* Status Bar */
+    .status-bar {
+      height: 48px;
+      padding: 12px 28px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      z-index: 900;
+      pointer-events: none;
+    }
+
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+    }
+
+    /* Screen Area */
+    .screen-content {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      scroll-behavior: smooth;
+    }
+
+    .screen-content::-webkit-scrollbar {
+      width: 0px;
+      display: none;
+    }
+
+    /* Home Indicator */
+    .home-indicator {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 136px;
+      height: 4.5px;
+      background: rgba(255, 255, 255, 0.55);
+      border-radius: 4px;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    /* =======================================================
+       VARIANT A: APPLE MINIMALIST DARK (iOS 18)
+    ======================================================= */
+    .theme-apple {
+      --app-bg: #000000;
+      --card-bg: rgba(28, 28, 30, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent: #0A84FF;
+      --subtext: rgba(235, 235, 245, 0.6);
+      --highlight: rgba(10, 132, 255, 0.15);
+      background: var(--app-bg);
+      color: #FFFFFF;
+    }
+
+    .apple-header {
+      padding: 10px 18px 12px;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(25px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      border-bottom: 0.5px solid rgba(84, 84, 88, 0.35);
+    }
+
+    .nav-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .nav-back-chip {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--accent);
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .group-pill {
+      background: rgba(120, 120, 128, 0.18);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #E5E7EB;
+    }
+
+    .week-segment-control {
+      display: flex;
+      background: rgba(118, 118, 128, 0.24);
+      padding: 2.5px;
+      border-radius: 9px;
+      margin-top: 8px;
+    }
+
+    .week-segment-btn {
+      flex: 1;
+      text-align: center;
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 6px 0;
+      border-radius: 7px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.65);
+      transition: all 0.2s ease;
+    }
+
+    .week-segment-btn.active {
+      background: rgba(99, 99, 102, 0.6);
+      color: #FFFFFF;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Calendar Day Switcher (Apple Style) */
+    .apple-day-carousel {
+      display: flex;
+      padding: 12px 16px 8px;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .apple-day-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: 14px;
+      min-width: 50px;
+      background: rgba(28, 28, 30, 0.5);
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .apple-day-item.active {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(10, 132, 255, 0.4);
+    }
+
+    .day-name {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      opacity: 0.8;
+      margin-bottom: 4px;
+    }
+
+    .day-num {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .day-dots {
+      display: flex;
+      gap: 3px;
+      margin-top: 5px;
+    }
+
+    .dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    .apple-day-item.active .dot {
+      background: #fff;
+    }
+
+    /* Subgroup Filter Bar */
+    .filter-pills-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px 4px;
+    }
+
+    .filter-pill {
+      background: rgba(44, 44, 46, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 5px 12px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--subtext);
+      cursor: pointer;
+      transition: all 0.18s;
+      white-space: nowrap;
+    }
+
+    .filter-pill.active {
+      background: rgba(10, 132, 255, 0.2);
+      border-color: rgba(10, 132, 255, 0.5);
+      color: #38BDF8;
+    }
+
+    /* View Switcher Bar */
+    .view-mode-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 18px 12px;
+    }
+
+    .mode-toggle-group {
+      display: flex;
+      background: rgba(44, 44, 46, 0.8);
+      border-radius: 8px;
+      padding: 2px;
+    }
+
+    .mode-btn {
+      padding: 4px 10px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--subtext);
+      border-radius: 6px;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      transition: all 0.15s;
+    }
+
+    .mode-btn.active {
+      background: #3A3A3C;
+      color: #fff;
+    }
+
+    .count-indicator {
+      font-size: 12px;
+      color: var(--subtext);
+    }
+
+    /* Search Bar in Mockup */
+    .mobile-search-box {
+      margin: 4px 18px 10px;
+      background: rgba(28, 28, 30, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 7px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mobile-search-box input {
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 13px;
+      color: #fff;
+      width: 100%;
+      font-family: var(--font-system);
+    }
+
+    .mobile-search-box input::placeholder {
+      color: rgba(235, 235, 245, 0.35);
+    }
+
+    /* Card List (Apple Style) */
+    .cards-container {
+      padding: 4px 18px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .apple-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 14px 16px;
+      backdrop-filter: blur(20px);
+      transition: transform 0.15s, box-shadow 0.15s;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .apple-card:active {
+      transform: scale(0.985);
+    }
+
+    .apple-card.active-pair {
+      border-color: rgba(10, 132, 255, 0.45);
+      background: linear-gradient(180deg, rgba(10, 132, 255, 0.12) 0%, rgba(28, 28, 30, 0.95) 100%);
+      box-shadow: 0 4px 20px rgba(10, 132, 255, 0.18);
+    }
+
+    .card-meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .time-slot {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--subtext);
+    }
+
+    .pair-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #E5E7EB;
+    }
+
+    .type-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 7px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .type-lecture {
+      background: rgba(191, 90, 242, 0.18);
+      color: #D8B4FE;
+      border: 1px solid rgba(191, 90, 242, 0.3);
+    }
+
+    .type-lab {
+      background: rgba(48, 209, 88, 0.18);
+      color: #86EFAC;
+      border: 1px solid rgba(48, 209, 88, 0.3);
+    }
+
+    .type-seminar {
+      background: rgba(255, 159, 10, 0.18);
+      color: #FDBA74;
+      border: 1px solid rgba(255, 159, 10, 0.3);
+    }
+
+    .subject-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #FFFFFF;
+      line-height: 1.3;
+      margin-bottom: 10px;
+    }
+
+    .card-footer-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 12.5px;
+    }
+
+    .teacher-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: rgba(235, 235, 245, 0.85);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 3px 8px;
+      border-radius: 20px;
+      max-width: 65%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .teacher-avatar {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #3B82F6;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .room-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255, 255, 255, 0.07);
+      padding: 3px 8px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #93C5FD;
+    }
+
+    /* Live Progress Bar on Active Pair */
+    .active-progress-wrap {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    }
+
+    .live-status-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11.5px;
+      margin-bottom: 5px;
+    }
+
+    .live-pulse-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #34D399;
+      font-weight: 700;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #34D399;
+      box-shadow: 0 0 8px #34D399;
+      animation: pulseAnim 1.6s infinite ease-in-out;
+    }
+
+    @keyframes pulseAnim {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.4); }
+    }
+
+    .live-progress-bar {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .live-progress-fill {
+      height: 100%;
+      width: 58%;
+      background: linear-gradient(90deg, #0A84FF, #30D158);
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+
+    /* Break Indicator */
+    .break-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 6px 0;
+      font-size: 12px;
+      color: rgba(235, 235, 245, 0.4);
+      position: relative;
+    }
+
+    .break-indicator::before,
+    .break-indicator::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    /* =======================================================
+       VARIANT B: LINEAR DARK PRO (Glowing Accents)
+    ======================================================= */
+    .theme-linear {
+      --app-bg: #090A0F;
+      --card-bg: #11141C;
+      --card-border: rgba(255, 255, 255, 0.07);
+      --accent: #5E6AD2;
+      --subtext: #8A8F98;
+      background: var(--app-bg);
+      color: #E2E8F0;
+    }
+
+    .theme-linear .apple-header {
+      background: rgba(9, 10, 15, 0.85);
+      border-bottom-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .theme-linear .apple-day-item {
+      background: #141722;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+    }
+
+    .theme-linear .apple-day-item.active {
+      background: #1C202F;
+      border-color: #5E6AD2;
+      box-shadow: 0 0 16px rgba(94, 106, 210, 0.35);
+      color: #FFFFFF;
+    }
+
+    .theme-linear .apple-card {
+      background: #11141C;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 16px;
+      position: relative;
+    }
+
+    .theme-linear .apple-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+      background: transparent;
+      transition: background 0.2s;
+    }
+
+    .theme-linear .apple-card.active-pair {
+      background: #131724;
+      border-color: rgba(94, 106, 210, 0.4);
+      box-shadow: 0 0 24px rgba(94, 106, 210, 0.15);
+    }
+
+    .theme-linear .apple-card.active-pair::before {
+      background: #5E6AD2;
+    }
+
+    .theme-linear .time-slot {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #717784;
+    }
+
+    .theme-linear .subject-title {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+    }
+
+    .theme-linear .type-pill {
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+    }
+
+    .theme-linear .filter-pill {
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: #12151E;
+    }
+
+    .theme-linear .filter-pill.active {
+      background: #1C2030;
+      border-color: #5E6AD2;
+      color: #A5B4FC;
+    }
+
+    /* =======================================================
+       VARIANT C: COMPACT TIMELINE VIEW
+    ======================================================= */
+    .timeline-view-wrapper {
+      padding: 10px 14px 40px;
+      position: relative;
+    }
+
+    .timeline-now-marker {
+      position: absolute;
+      left: 60px;
+      right: 14px;
+      top: 245px;
+      display: flex;
+      align-items: center;
+      z-index: 40;
+      pointer-events: none;
+    }
+
+    .timeline-now-dot {
+      width: 10px;
+      height: 10px;
+      background: #EF4444;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #EF4444;
+      flex-shrink: 0;
+      margin-left: -5px;
+    }
+
+    .timeline-now-line {
+      flex: 1;
+      height: 2px;
+      background: #EF4444;
+      box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+    }
+
+    .timeline-now-label {
+      background: #EF4444;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      margin-left: 6px;
+      white-space: nowrap;
+    }
+
+    .timeline-row {
+      display: flex;
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .timeline-axis {
+      width: 54px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      padding-right: 12px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #6B7280;
+      padding-top: 2px;
+    }
+
+    .timeline-spine {
+      width: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      position: absolute;
+      left: 60px;
+      top: 0;
+      bottom: -12px;
+    }
+
+    .timeline-node {
+      position: absolute;
+      left: 56px;
+      top: 6px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #1F2937;
+      border: 2px solid #4B5563;
+      z-index: 2;
+    }
+
+    .timeline-node.active {
+      border-color: #38BDF8;
+      background: #0284C7;
+      box-shadow: 0 0 8px #38BDF8;
+    }
+
+    .timeline-card-content {
+      flex: 1;
+      margin-left: 18px;
+      background: rgba(24, 27, 36, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+    }
+
+    .timeline-card-content:active {
+      background: rgba(30, 34, 45, 0.95);
+    }
+
+    /* Weekly Matrix View */
+    .weekly-matrix {
+      padding: 8px 12px 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .matrix-day-group {
+      background: rgba(24, 24, 27, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .matrix-day-header {
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.03);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .matrix-day-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #E2E8F0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .matrix-day-color {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .matrix-lesson-row {
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 0.5px solid rgba(255, 255, 255, 0.04);
+      font-size: 12.5px;
+    }
+
+    .matrix-lesson-row:last-child {
+      border-bottom: none;
+    }
+
+    .matrix-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #9CA3AF;
+      width: 16px;
+    }
+
+    .matrix-title {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #F1F5F9;
+      font-weight: 500;
+    }
+
+    .matrix-room {
+      color: #93C5FD;
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+
+    /* Modal / Bottom Sheet */
+    .sheet-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 800;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+
+    .sheet-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .bottom-sheet {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #1C1C1E;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 28px 28px 0 0;
+      padding: 16px 20px 32px;
+      z-index: 850;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .bottom-sheet.open {
+      transform: translateY(0);
+    }
+
+    .sheet-handle {
+      width: 36px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 2px;
+      margin: 0 auto 16px;
+    }
+
+    .sheet-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+
+    .sheet-detail-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .sheet-detail-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sheet-btn {
+      margin-top: 18px;
+      width: 100%;
+      background: var(--accent-blue);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Comparison Multi-view Grid */
+    .comparison-grid {
+      display: none;
+      width: 100%;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .comparison-column {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .comp-col-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .comp-col-badge {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #9CA3AF;
+    }
+
+    @media (max-width: 1100px) {
+      .workbench {
+        flex-direction: column;
+        align-items: center;
+      }
+      .specs-panel {
+        width: 100%;
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Studio Bar -->
+  <header class="studio-bar">
+    <div class="brand-section">
+      <span class="brand-badge">ULSU UX LAB</span>
+      <div>
+        <div class="brand-title">Интерактивный прототип расписания</div>
+        <div class="brand-sub">ФМИАТ УлГУ • Группа АС-О-26/1</div>
+      </div>
+    </div>
+
+    <div class="concept-nav">
+      <button class="concept-btn active" onclick="switchConcept('A')">
+        <span>🍏</span> Вариант A: Apple iOS 18
+      </button>
+      <button class="concept-btn" onclick="switchConcept('B')">
+        <span>⚡</span> Вариант B: Linear Pro
+      </button>
+      <button class="concept-btn" onclick="switchConcept('C')">
+        <span>⏱️</span> Вариант C: Timeline
+      </button>
+      <button class="concept-btn" onclick="switchConcept('ALL')">
+        <span>📊</span> Сравнение 3 концептов
+      </button>
+    </div>
+
+    <div class="studio-actions">
+      <label class="toggle-pill" title="Включить симуляцию текущей пары (11:35)">
+        <input type="checkbox" id="liveSimToggle" checked onchange="toggleLiveSimulation()">
+        <span>Симуляция активной пары</span>
+      </label>
+    </div>
+  </header>
+
+  <!-- Main Workbench -->
+  <main class="workbench">
+
+    <!-- Design Specifications Sidebar -->
+    <aside class="specs-panel" id="specsPanel">
+      <div class="specs-header">
+        <div class="specs-title" id="specConceptTitle">🍏 Apple Minimalist (iOS 18)</div>
+        <div class="specs-desc" id="specConceptDesc">
+          Нативный стиль Apple Human Interface Guidelines: размытие Liquid Glass, мягкая глубина, карточки со скруглением 18px и крупная типографика SF Pro.
+        </div>
+      </div>
+
+      <div class="feature-list" id="specFeatureList">
+        <div class="feature-item">
+          <span class="feature-icon">✨</span>
+          <span><strong>Rich Lesson Cards:</strong> Название предмета отделено от типа, преподавателя и аудитории.</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">👥</span>
+          <span><strong>Фильтр подгрупп:</strong> Переключатель "Все / 1 / 2 подгруппа" устраняет визуальный шум лабораторных.</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🔴</span>
+          <span><strong>Live Progress:</strong> Индикатор текущей пары с прогресс-баром и оставшимся временем.</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🗓️</span>
+          <span><strong>Горизонтальный календарь:</strong> Быстрое переключение дней с точками загрузки.</span>
+        </div>
+      </div>
+
+      <div class="metric-grid">
+        <div class="metric-card">
+          <div class="metric-val" id="metricReadability">+64%</div>
+          <div class="metric-label">Скорость считывания</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val" id="metricTapTarget">48px</div>
+          <div class="metric-label">Мин. область тапа</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val">3 тапа</div>
+          <div class="metric-label">До аудитории/кабинета</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-val">0 переходов</div>
+          <div class="metric-label">Переключение недель</div>
+        </div>
+      </div>
+
+      <div class="interactive-legend">
+        💡 <strong>Интерактивность в прототипе:</strong><br>
+        1. Нажмите на любой день недели для фильтрации.<br>
+        2. Переключайте подгруппы («1» или «2»).<br>
+        3. Нажмите на любую пару для просмотра карточки с деталями.<br>
+        4. Нажмите на Dynamic Island для вызова живого статуса пары.
+      </div>
+    </aside>
+
+    <!-- Single Device Preview Stage -->
+    <div class="preview-stage" id="singlePreviewStage">
+
+      <div class="iphone-frame theme-apple" id="mobileDevice">
+        
+        <!-- Dynamic Island -->
+        <div class="dynamic-island" id="dynamicIsland" onclick="toggleDynamicIsland()">
+          <div class="island-camera"></div>
+          <div class="island-sensor"></div>
+          <div class="island-live-content">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="font-size:12px;">🐍</span>
+              <span style="font-size:11px; font-weight:700; color:#fff;">Python • Лаб 601</span>
+            </div>
+            <div style="font-size:11px; font-family:var(--font-mono); color:#34D399; font-weight:700;">
+              45 мин ост.
+            </div>
+          </div>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+          <span id="phoneClock">11:35</span>
+          <div class="status-icons">
+            <span>5G</span>
+            <span>📶</span>
+            <span>94%</span>
+          </div>
+        </div>
+
+        <!-- Phone Content -->
+        <div class="screen-content" id="screenScrollArea">
+
+          <!-- Sticky Header Area -->
+          <div class="apple-header">
+            <div class="nav-top-row">
+              <div class="nav-back-chip">
+                <span>‹</span>
+                <span>ФМИАТ</span>
+              </div>
+              <div class="group-pill" id="groupPillLabel">АС-О-26/1</div>
+            </div>
+
+            <!-- Week Switcher -->
+            <div class="week-segment-control">
+              <div class="week-segment-btn active" id="weekBtn1" onclick="setWeek(1)">1 неделя (Нечётная)</div>
+              <div class="week-segment-btn" id="weekBtn2" onclick="setWeek(2)">2 неделя (Чётная)</div>
+            </div>
+          </div>
+
+          <!-- Top Day Selector Carousel -->
+          <div class="apple-day-carousel" id="dayCarousel">
+            <!-- Dynamically populated via JS -->
+          </div>
+
+          <!-- Subgroup Filter Pills -->
+          <div class="filter-pills-row">
+            <div class="filter-pill active" onclick="setSubgroup('all', this)">Все подгруппы</div>
+            <div class="filter-pill" onclick="setSubgroup('1', this)">1 подгруппа</div>
+            <div class="filter-pill" onclick="setSubgroup('2', this)">2 подгруппа</div>
+          </div>
+
+          <!-- Search & Filter Bar -->
+          <div class="mobile-search-box">
+            <span style="font-size:13px; color:rgba(255,255,255,0.4);">🔍</span>
+            <input type="text" id="scheduleSearchInput" placeholder="Поиск предмета, преподавателя, аудитории..." oninput="handleSearch(this.value)">
+          </div>
+
+          <!-- View Mode & Summary Row -->
+          <div class="view-mode-bar">
+            <div class="count-indicator" id="pairCountSummary">3 пары сегодня</div>
+            <div class="mode-toggle-group">
+              <button class="mode-btn active" id="btnModeDay" onclick="setViewMode('day')">День</button>
+              <button class="mode-btn" id="btnModeTimeline" onclick="setViewMode('timeline')">Таймлайн</button>
+              <button class="mode-btn" id="btnModeWeek" onclick="setViewMode('week')">Сетка недели</button>
+            </div>
+          </div>
+
+          <!-- Schedule Dynamic Render Area -->
+          <div id="scheduleRenderRoot">
+            <!-- Injected by JavaScript based on concept and view mode -->
+          </div>
+
+        </div>
+
+        <!-- Bottom Sheet Modal for Lesson Details -->
+        <div class="sheet-backdrop" id="sheetBackdrop" onclick="closeDetailSheet()"></div>
+        <div class="bottom-sheet" id="bottomSheet">
+          <div class="sheet-handle"></div>
+          <div id="sheetContent">
+            <!-- Populated on card click -->
+          </div>
+          <button class="sheet-btn" onclick="closeDetailSheet()">Закрыть</button>
+        </div>
+
+        <!-- Home Indicator Bar -->
+        <div class="home-indicator"></div>
+      </div>
+
+    </div>
+
+    <!-- Comparison View (3 Concepts side-by-side) -->
+    <div class="comparison-grid" id="comparisonStage">
+
+      <!-- Column A: Apple iOS 18 -->
+      <div class="comparison-column">
+        <div class="comp-col-title">
+          <span>🍏 Вариант A: Apple iOS 18</span>
+          <span class="comp-col-badge">HIG Focus</span>
+        </div>
+        <div class="iphone-frame theme-apple" style="transform: scale(0.85); transform-origin: top center; height:850px;">
+          <div class="status-bar" style="padding-top:14px;"><span>11:35</span><span>5G 📶 94%</span></div>
+          <div class="screen-content" style="pointer-events: none;" id="compColA"></div>
+          <div class="home-indicator"></div>
+        </div>
+      </div>
+
+      <!-- Column B: Linear Dark Pro -->
+      <div class="comparison-column">
+        <div class="comp-col-title">
+          <span>⚡ Вариант B: Linear Pro</span>
+          <span class="comp-col-badge">High Precision</span>
+        </div>
+        <div class="iphone-frame theme-linear" style="transform: scale(0.85); transform-origin: top center; height:850px;">
+          <div class="status-bar" style="padding-top:14px;"><span>11:35</span><span>5G 📶 94%</span></div>
+          <div class="screen-content" style="pointer-events: none;" id="compColB"></div>
+          <div class="home-indicator"></div>
+        </div>
+      </div>
+
+      <!-- Column C: Compact Timeline -->
+      <div class="comparison-column">
+        <div class="comp-col-title">
+          <span>⏱️ Вариант C: Timeline</span>
+          <span class="comp-col-badge">Time Continuous</span>
+        </div>
+        <div class="iphone-frame theme-apple" style="transform: scale(0.85); transform-origin: top center; height:850px;">
+          <div class="status-bar" style="padding-top:14px;"><span>11:35</span><span>5G 📶 94%</span></div>
+          <div class="screen-content" style="pointer-events: none;" id="compColC"></div>
+          <div class="home-indicator"></div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    /* ====================================================================
+       AUTHENTIC ULSU SCHEDULE DATA (ФМИАТ • АС-О-26/1) - WEEKS 1 & 2
+    ==================================================================== */
+    const SCHEDULE_DATA_WEEKS = {
+      1: [
+        {
+          id: "mon",
+          name: "Пн",
+          fullName: "Понедельник",
+          dateNum: 12,
+          dots: ["#BF5AF2", "#30D158", "#30D158"],
+          lessons: [
+            {
+              id: "w1_mon_2",
+              num: 2,
+              time: "09:30 – 10:50",
+              subject: "Алгебра и геометрия",
+              type: "Лекция",
+              typeCode: "lecture",
+              teacher: "Ю.Ю. Фролова",
+              teacherInitials: "ФЮ",
+              room: "332",
+              building: "Главный корпус",
+              subgroup: "all",
+              isActive: false
+            },
+            {
+              id: "w1_mon_3",
+              num: 3,
+              time: "11:00 – 12:20",
+              subject: "Программирование на языке Python",
+              type: "Лабораторная",
+              typeCode: "lab",
+              teacher: "И.А. Санников",
+              teacherInitials: "СИ",
+              room: "лаб. 601",
+              building: "Корпус 1",
+              subgroup: "1",
+              isActive: true,
+              progress: 0.58,
+              remainingMin: 45
+            },
+            {
+              id: "w1_mon_4",
+              num: 4,
+              time: "12:45 – 14:05",
+              subject: "Инженерная и компьютерная графика",
+              type: "Лабораторная",
+              typeCode: "lab",
+              teacher: "К.А. Егоров",
+              teacherInitials: "ЕК",
+              room: "лаб. 407",
+              building: "Корпус 1",
+              subgroup: "2",
+              isActive: false
+            }
+          ]
+        },
+        {
+          id: "tue",
+          name: "Вт",
+          fullName: "Вторник",
+          dateNum: 13,
+          dots: ["#FF9F0A", "#30D158", "#BF5AF2", "#BF5AF2"],
+          lessons: [
+            {
+              id: "w1_tue_2",
+              num: 2,
+              time: "09:30 – 10:50",
+              subject: "Дискретная математика",
+              type: "Семинар",
+              typeCode: "seminar",
+              teacher: "А.Ю. Богданов",
+              teacherInitials: "БА",
+              room: "3/418",
+              building: "Корпус 3",
+              subgroup: "all",
+              isActive: false
+            },
+            {
+              id: "w1_tue_3",
+              num: 3,
+              time: "11:00 – 12:20",
+              subject: "Иностранный язык (Английский)",
+              type: "Семинар",
+              typeCode: "seminar",
+              teacher: "И.Р. Васильева",
+              teacherInitials: "ВИ",
+              room: "332",
+              building: "Главный корпус",
+              subgroup: "1",
+              isActive: false
+            },
+            {
+              id: "w1_tue_4",
+              num: 4,
+              time: "12:45 – 14:05",
+              subject: "Общая физика",
+              type: "Лекция",
+              typeCode: "lecture",
+              teacher: "Д.А. Богданова",
+              teacherInitials: "БД",
+              room: "332",
+              building: "Главный корпус",
+              subgroup: "all",
+              isActive: false
+            },
+            {
+              id: "w1_tue_6",
+              num: 6,
+              time: "15:45 – 17:05",
+              subject: "История России",
+              type: "Лекция",
+              typeCode: "lecture",
+              teacher: "А.М. Булынин",
+              teacherInitials: "БА",
+              room: "Онлайн",
+              building: "Контур Толк (поток)",
+              subgroup: "all",
+              isActive: false
+            }
+          ]
+        },
+        {
+          id: "wed",
+          name: "Ср",
+          fullName: "Среда",
+          dateNum: 14,
+          dots: ["#BF5AF2", "#30D158", "#FF9F0A"],
+          lessons: [
+            {
+              id: "w1_wed_2",
+              num: 2,
+              time: "09:30 – 10:50",
+              subject: "Дискретная математика",
+              type: "Лекция",
+              typeCode: "lecture",
+              teacher: "О.Д. Юрьева",
+              teacherInitials: "ЮО",
+              room: "332",
+              building: "Главный корпус",
+              subgroup: "all",
+              isActive: false
+            },
+            {
+              id: "w1_wed_3",
+              num: 3,
+              time: "11:00 – 12:20",
+              subject: "Информатика и программирование",
+              type: "Лабораторная",
+              typeCode: "lab",
+              teacher: "И.А. Санников",
+              teacherInitials: "СИ",
+              room: "лаб. 601",
+              building: "Корпус 1",
+              subgroup: "2",
+              isActive: false
+            },
+            {
+              id: "w1_wed_4",
+              num: 4,
+              time: "12:45 – 14:05",
+              subject: "История России",
+              type: "Семинар",
+              typeCode: "seminar",
+              teacher: "А.М. Булынин",
+              teacherInitials: "БА",
+              room: "417",
+              building: "Главный корпус",
+              subgroup: "all",
+              isActive: false
+            }
+          ]
+        },
+        {
+          id: "thu",
+          name: "Чт",
+          fullName: "Четверг",
+          dateNum: 15,
+          dots: ["#10B981", "#FF9F0A", "#FF9F0A"],
+          lessons: [
+            {
+              id: "w1_thu_1",
+              num: 1,
+              time: "08:00 – 09:20",
+              subject: "Физическая культура и спорт",
+              type: "Практика",
+              typeCode: "seminar",
+              teacher: "Кафедра ФКиС",
+              teacherInitials: "ФК",
+              room: "Спортзал",
+              building: "Спорткомплекс УлГУ",
+              subgroup: "all",
+              isActive: false
+            },
+            {
+              id: "w1_thu_2",
+              num: 2,
+              time: "09:30 – 10:50",
+              subject: "Математический анализ",
+              type: "Семинар",
+              typeCode: "seminar",
+              teacher: "А.Б. Веревкин",
+              teacherInitials: "ВА",
+              room: "3/418",
+              building: "Корпус 3",
+              subgroup: "all",
+              isActive: false
+            },
+            {
+              id: "w1_thu_3",
+              num: 3,
+              time: "11:00 – 12:20",
+              subject: "Информатика и программирование",
+              type: "Семинар",
+              typeCode: "seminar",
+              teacher: "И.А. Санников",
+              teacherInitials: "СИ",
+              room: "лаб. 601",
+              building: "Корпус 1",
+              subgroup: "1",
+              isActive: false
+            }
+          ]
+        },
+        {
+          id: "fri",
+          name: "Пт",
+          fullName: "Пятница",
+          dateNum: 16,
+          dots: ["#FF9F0A", "#FF9F0A", "#BF5AF2"],
+          lessons: [
+            {
+              id: "w1_fri_1",
+              num: 1,
+              time: "08:00 – 09:20",
+              subject: "Алгебра и геометрия",
+              type: "Семинар",
+              typeCode: "seminar",
+              teacher: "Ю.Ю. Фролова",
+              teacherInitials: "ФЮ",
+              room: "2/20а",
+              building: "Корпус 2",
+              subgroup: "all",
+              isActive: false
+            },
+            {
+              id: "w1_fri_2",
+              num: 2,
+              time: "09:30 – 10:50",
+              subject: "Начертательная геометрия",
+              type: "Семинар",
+              typeCode: "seminar",
+              teacher: "А.С. Кондратьева",
+              teacherInitials: "КА",
+              room: "3/316",
+              building: "Корпус 3",
+              subgroup: "all",
+              isActive: false
+            },
+            {
+              id: "w1_fri_4",
+              num: 4,
+              time: "12:45 – 14:05",
+              subject: "Математический анализ",
+              type: "Лекция",
+              typeCode: "lecture",
+              teacher: "А.Б. Веревкин",
+              teacherInitials: "ВА",
+              room: "332",
+              building: "Главный корпус",
+              subgroup: "all",
+              isActive: false
+            }
+          ]
+        },
+        {
+          id: "sat",
+          name: "Сб",
+          fullName: "Суббота",
+          dateNum: 17,
+          dots: ["#8E8E93"],
+          lessons: []
+        }
+      ],
+      2: [
+        {
+          id: "mon",
+          name: "Пн",
+          fullName: "Понедельник",
+          dateNum: 19,
+          dots: ["#10B981", "#BF5AF2", "#30D158", "#FF9F0A"],
+          lessons: [
+            {
+              id: "w2_mon_1",
+              num: 1,
+              time: "08:00 – 09:20",
+              subject: "Физическая культура и спорт",
+              type: "Практика",
+              typeCode: "seminar",
+              teacher: "Кафедра ФКиС",
+              teacherInitials: "ФК",
+              room: "Спортзал",
+              building: "Спорткомплекс",
+              subgroup: "all",
+              isActive: false
+            },
+            {
+              id: "w2_mon_2",
+              num: 2,
+              time: "09:30 – 10:50",
+              subject: "Алгебра и геометрия",
+              type: "Лекция",
+              typeCode: "lecture",
+              teacher: "Ю.Ю. Фролова",
+              teacherInitials: "ФЮ",
+              room: "332",
+              building: "Главный корпус",
+              subgroup: "all",
+              isActive: false
+            },
+            {
+              id: "w2_mon_3",
+              num: 3,
+              time: "11:00 – 12:20",
+              subject: "Инженерная и компьютерная графика",
+              type: "Лабораторная",
+              typeCode: "lab",
+              teacher: "К.А. Егоров",
+              teacherInitials: "ЕК",
+              room: "лаб. 407",
+              building: "Корпус 1",
+              subgroup: "1",
+              isActive: false
+            },
+            {
+              id: "w2_mon_4",
+              num: 4,
+              time: "12:45 – 14:05",
+              subject: "Алгебра и геометрия",
+              type: "Семинар",
+              typeCode: "seminar",
+              teacher: "Ю.Ю. Фролова",
+              teacherInitials: "ФЮ",
+              room: "2/26",
+              building: "Корпус 2",
+              subgroup: "all",
+              isActive: false
+            }
+          ]
+        },
+        {
+          id: "tue",
+          name: "Вт",
+          fullName: "Вторник",
+          dateNum: 20,
+          dots: ["#30D158", "#FF9F0A", "#FF9F0A"],
+          lessons: [
+            {
+              id: "w2_tue_2",
+              num: 2,
+              time: "09:30 – 10:50",
+              subject: "Общая физика",
+              type: "Лабораторная",
+              typeCode: "lab",
+              teacher: "Д.А. Богданова",
+              teacherInitials: "БД",
+              room: "лаб. 233",
+              building: "Главный корпус",
+              subgroup: "2",
+              isActive: false
+            },
+            {
+              id: "w2_tue_3",
+              num: 3,
+              time: "11:00 – 12:20",
+              subject: "Дискретная математика",
+              type: "Семинар",
+              typeCode: "seminar",
+              teacher: "А.Ю. Богданов",
+              teacherInitials: "БА",
+              room: "3/316",
+              building: "Корпус 3",
+              subgroup: "all",
+              isActive: false
+            },
+            {
+              id: "w2_tue_4",
+              num: 4,
+              time: "12:45 – 14:05",
+              subject: "Математический анализ",
+              type: "Семинар",
+              typeCode: "seminar",
+              teacher: "А.Б. Веревкин",
+              teacherInitials: "ВА",
+              room: "3/321",
+              building: "Корпус 3",
+              subgroup: "all",
+              isActive: false
+            }
+          ]
+        },
+        {
+          id: "wed",
+          name: "Ср",
+          fullName: "Среда",
+          dateNum: 21,
+          dots: ["#FF9F0A", "#BF5AF2", "#30D158", "#FF9F0A"],
+          lessons: [
+            {
+              id: "w2_wed_1",
+              num: 1,
+              time: "08:00 – 09:20",
+              subject: "Иностранный язык (Английский)",
+              type: "Семинар",
+              typeCode: "seminar",
+              teacher: "И.Р. Васильева",
+              teacherInitials: "ВИ",
+              room: "417",
+              building: "Главный корпус",
+              subgroup: "2",
+              isActive: false
+            },
+            {
+              id: "w2_wed_2",
+              num: 2,
+              time: "09:30 – 10:50",
+              subject: "Дискретная математика",
+              type: "Лекция",
+              typeCode: "lecture",
+              teacher: "О.Д. Юрьева",
+              teacherInitials: "ЮО",
+              room: "332",
+              building: "Главный корпус",
+              subgroup: "all",
+              isActive: false
+            },
+            {
+              id: "w2_wed_3",
+              num: 3,
+              time: "11:00 – 12:20",
+              subject: "Информатика и программирование",
+              type: "Лабораторная",
+              typeCode: "lab",
+              teacher: "И.А. Санников",
+              teacherInitials: "СИ",
+              room: "лаб. 601",
+              building: "Корпус 1",
+              subgroup: "1",
+              isActive: false
+            },
+            {
+              id: "w2_wed_4",
+              num: 4,
+              time: "12:45 – 14:05",
+              subject: "История России",
+              type: "Семинар",
+              typeCode: "seminar",
+              teacher: "А.М. Булынин",
+              teacherInitials: "БА",
+              room: "2/26",
+              building: "Корпус 2",
+              subgroup: "all",
+              isActive: false
+            }
+          ]
+        },
+        {
+          id: "thu",
+          name: "Чт",
+          fullName: "Четверг",
+          dateNum: 22,
+          dots: ["#10B981", "#BF5AF2", "#30D158"],
+          lessons: [
+            {
+              id: "w2_thu_1",
+              num: 1,
+              time: "08:00 – 09:20",
+              subject: "Физическая культура и спорт",
+              type: "Практика",
+              typeCode: "seminar",
+              teacher: "Кафедра ФКиС",
+              teacherInitials: "ФК",
+              room: "Спортзал",
+              building: "Спорткомплекс",
+              subgroup: "all",
+              isActive: false
+            },
+            {
+              id: "w2_thu_2",
+              num: 2,
+              time: "09:30 – 10:50",
+              subject: "Информатика и программирование",
+              type: "Лекция",
+              typeCode: "lecture",
+              teacher: "И.А. Санников",
+              teacherInitials: "СИ",
+              room: "332",
+              building: "Главный корпус",
+              subgroup: "all",
+              isActive: false
+            },
+            {
+              id: "w2_thu_3",
+              num: 3,
+              time: "11:00 – 12:20",
+              subject: "Программирование на языке Python",
+              type: "Лабораторная",
+              typeCode: "lab",
+              teacher: "И.А. Санников",
+              teacherInitials: "СИ",
+              room: "лаб. 601",
+              building: "Корпус 1",
+              subgroup: "2",
+              isActive: false
+            }
+          ]
+        },
+        {
+          id: "fri",
+          name: "Пт",
+          fullName: "Пятница",
+          dateNum: 23,
+          dots: ["#BF5AF2", "#BF5AF2"],
+          lessons: [
+            {
+              id: "w2_fri_3",
+              num: 3,
+              time: "11:00 – 12:20",
+              subject: "Начертательная геометрия",
+              type: "Лекция",
+              typeCode: "lecture",
+              teacher: "А.С. Кондратьева",
+              teacherInitials: "КА",
+              room: "3/211",
+              building: "Корпус 3",
+              subgroup: "all",
+              isActive: false
+            },
+            {
+              id: "w2_fri_4",
+              num: 4,
+              time: "12:45 – 14:05",
+              subject: "Математический анализ",
+              type: "Лекция",
+              typeCode: "lecture",
+              teacher: "А.Б. Веревкин",
+              teacherInitials: "ВА",
+              room: "332",
+              building: "Главный корпус",
+              subgroup: "all",
+              isActive: false
+            }
+          ]
+        },
+        {
+          id: "sat",
+          name: "Сб",
+          fullName: "Суббота",
+          dateNum: 24,
+          dots: ["#8E8E93"],
+          lessons: []
+        }
+      ]
+    };
+
+    /* App State */
+    let currentConcept = 'A'; // 'A' | 'B' | 'C' | 'ALL'
+    let currentWeek = 1;
+    let selectedDayIndex = 0; // Monday
+    let selectedSubgroup = 'all'; // 'all' | '1' | '2'
+    let searchQuery = '';
+    let isLiveSimEnabled = true;
+    let viewMode = 'day'; // 'day' | 'timeline' | 'week'
+
+    /* Specifications Content Dictionary */
+    const SPECS_MAP = {
+      'A': {
+        title: "🍏 Apple Minimalist (iOS 18)",
+        desc: "Нативный стиль Apple Human Interface Guidelines: размытие Liquid Glass, мягкая глубина, карточки со скруглением 18px и крупная типографика SF Pro.",
+        readability: "+64%",
+        tapTarget: "48px",
+        features: [
+          { icon: "✨", text: "<strong>Rich Lesson Cards:</strong> Название предмета отделено от типа, преподавателя и аудитории." },
+          { icon: "👥", text: "<strong>Фильтр подгрупп:</strong> Переключатель 'Все / 1 / 2 подгруппа' устраняет визуальный шум лабораторных." },
+          { icon: "🔴", text: "<strong>Live Progress:</strong> Индикатор текущей пары с прогресс-баром и оставшимся временем." },
+          { icon: "🗓️", text: "<strong>Горизонтальный календарь:</strong> Быстрое переключение дней с точками загрузки." }
+        ]
+      },
+      'B': {
+        title: "⚡ Linear Dark Pro (High Precision)",
+        desc: "Эстетика современных инструментов разработки (Linear, Raycast): монохромная палитра Zinc/Slate, светящиеся акценты, моноширинные таймстампы и микро-границы.",
+        readability: "+78%",
+        tapTarget: "44px",
+        features: [
+          { icon: "💡", text: "<strong>Neon Glow Accents:</strong> Светящиеся контуры для текущей пары и цветные индикаторы типов занятий." },
+          { icon: "⏱️", text: "<strong>Monospace Timers:</strong> Высокоточный таймер с моноширинным шрифтом и тегами пар." },
+          { icon: "🎯", text: "<strong>Density & Precision:</strong> Максимальная плотность полезной информации без потерь читаемости." },
+          { icon: "☕", text: "<strong>Break Callouts:</strong> Явные плашки перерывов («Перерыв 25 мин • Обед»)." }
+        ]
+      },
+      'C': {
+        title: "⏱️ Compact Timeline (Notion / Time-grid)",
+        desc: "Непрерывная временная шкала дня с 08:00 до 18:00: красная линия текущего времени, узловые точки и масштабируемые блоки пар.",
+        readability: "+70%",
+        tapTarget: "46px",
+        features: [
+          { icon: "📍", text: "<strong>Live Current Time Needle:</strong> Красная полоса текущей минуты (11:35) прямо в расписании." },
+          { icon: "📐", text: "<strong>Chronological Axis:</strong> Непрерывная вертикальная ось времени с узлами начала пар." },
+          { icon: "🔍", text: "<strong>Окна и перерывы:</strong> Наглядная визуализация пустых окон между парами." },
+          { icon: "📊", text: "<strong>Quick Scan:</strong> Мгновенная оценка загруженности учебного дня с первого взгляда." }
+        ]
+      }
+    };
+
+    /* Initialize Mockup */
+    function init() {
+      renderDayCarousel();
+      renderContent();
+    }
+
+    /* Concept Switcher */
+    function switchConcept(concept) {
+      currentConcept = concept;
+      
+      // Update top button styles
+      document.querySelectorAll('.concept-btn').forEach((btn) => {
+        btn.classList.remove('active');
+      });
+      const btns = Array.from(document.querySelectorAll('.concept-btn'));
+      if (concept === 'A') btns[0]?.classList.add('active');
+      if (concept === 'B') btns[1]?.classList.add('active');
+      if (concept === 'C') btns[2]?.classList.add('active');
+      if (concept === 'ALL') btns[3]?.classList.add('active');
+
+      const mobileDevice = document.getElementById('mobileDevice');
+      const singleStage = document.getElementById('singlePreviewStage');
+      const compStage = document.getElementById('comparisonStage');
+      const specsPanel = document.getElementById('specsPanel');
+
+      if (concept === 'ALL') {
+        singleStage.style.display = 'none';
+        compStage.style.display = 'grid';
+        if (specsPanel) specsPanel.style.display = 'none';
+        renderComparisonStage();
+        return;
+      }
+
+      singleStage.style.display = 'flex';
+      compStage.style.display = 'none';
+      if (specsPanel) specsPanel.style.display = 'block';
+
+      // Switch theme classes on device
+      mobileDevice.classList.remove('theme-apple', 'theme-linear');
+      if (concept === 'A') {
+        mobileDevice.classList.add('theme-apple');
+      } else if (concept === 'B') {
+        mobileDevice.classList.add('theme-linear');
+      } else if (concept === 'C') {
+        mobileDevice.classList.add('theme-apple');
+      }
+
+      // Update Specs Panel
+      const specData = SPECS_MAP[concept];
+      document.getElementById('specConceptTitle').innerHTML = specData.title;
+      document.getElementById('specConceptDesc').innerHTML = specData.desc;
+      document.getElementById('metricReadability').innerText = specData.readability;
+      document.getElementById('metricTapTarget').innerText = specData.tapTarget;
+
+      const fList = document.getElementById('specFeatureList');
+      fList.innerHTML = specData.features.map(f => `
+        <div class="feature-item">
+          <span class="feature-icon">${f.icon}</span>
+          <span>${f.text}</span>
+        </div>
+      `).join('');
+
+      renderContent();
+    }
+
+    /* Render Top Day Carousel */
+    function renderDayCarousel() {
+      const container = document.getElementById('dayCarousel');
+      const days = SCHEDULE_DATA_WEEKS[currentWeek];
+      container.innerHTML = days.map((day, idx) => {
+        const isActive = idx === selectedDayIndex;
+        const dotsHtml = day.dots.map(color => `<span class="dot" style="background:${color}"></span>`).join('');
+        return `
+          <div class="apple-day-item ${isActive ? 'active' : ''}" onclick="selectDay(${idx})">
+            <span class="day-name">${day.name}</span>
+            <span class="day-num">${day.dateNum}</span>
+            <div class="day-dots">${dotsHtml}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectDay(index) {
+      selectedDayIndex = index;
+      renderDayCarousel();
+      if (currentConcept === 'ALL') {
+        renderComparisonStage();
+      } else {
+        renderContent();
+      }
+    }
+
+    function setWeek(w) {
+      currentWeek = w;
+      const b1 = document.getElementById('weekBtn1');
+      const b2 = document.getElementById('weekBtn2');
+      if (b1) b1.classList.toggle('active', w === 1);
+      if (b2) b2.classList.toggle('active', w === 2);
+      renderDayCarousel();
+      if (currentConcept === 'ALL') {
+        renderComparisonStage();
+      } else {
+        renderContent();
+      }
+    }
+
+    function setSubgroup(subgroup, el) {
+      selectedSubgroup = subgroup;
+      if (el && el.parentElement) {
+        el.parentElement.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        el.classList.add('active');
+      }
+      if (currentConcept === 'ALL') {
+        renderComparisonStage();
+      } else {
+        renderContent();
+      }
+    }
+
+    function setViewMode(mode) {
+      viewMode = mode;
+      document.getElementById('btnModeDay').classList.toggle('active', mode === 'day');
+      document.getElementById('btnModeTimeline').classList.toggle('active', mode === 'timeline');
+      document.getElementById('btnModeWeek').classList.toggle('active', mode === 'week');
+      renderContent();
+    }
+
+    function handleSearch(val) {
+      searchQuery = val.toLowerCase().trim();
+      renderContent();
+    }
+
+    function toggleLiveSimulation() {
+      isLiveSimEnabled = document.getElementById('liveSimToggle').checked;
+      if (currentConcept === 'ALL') {
+        renderComparisonStage();
+      } else {
+        renderContent();
+      }
+    }
+
+    function toggleDynamicIsland() {
+      const island = document.getElementById('dynamicIsland');
+      island.classList.toggle('island-pill-active');
+    }
+
+    /* Filter Lessons based on Subgroup and Search */
+    function getFilteredLessons(lessons) {
+      return lessons.filter(lesson => {
+        // Subgroup filter
+        if (selectedSubgroup !== 'all' && lesson.subgroup !== 'all' && lesson.subgroup !== selectedSubgroup) {
+          return false;
+        }
+        // Search filter
+        if (searchQuery) {
+          const matchSubj = lesson.subject.toLowerCase().includes(searchQuery);
+          const matchTeach = lesson.teacher.toLowerCase().includes(searchQuery);
+          const matchRoom = lesson.room.toLowerCase().includes(searchQuery);
+          const matchType = lesson.type.toLowerCase().includes(searchQuery);
+          if (!matchSubj && !matchTeach && !matchRoom && !matchType) return false;
+        }
+        return true;
+      });
+    }
+
+    /* Main Content Rendering */
+    function renderContent() {
+      const root = document.getElementById('scheduleRenderRoot');
+      const activeDay = SCHEDULE_DATA_WEEKS[currentWeek][selectedDayIndex];
+      const filteredLessons = getFilteredLessons(activeDay.lessons);
+
+      document.getElementById('pairCountSummary').innerText = `${filteredLessons.length} пар в этот день`;
+
+      if (viewMode === 'week') {
+        root.innerHTML = renderWeeklyGrid();
+        return;
+      }
+
+      if (viewMode === 'timeline' || currentConcept === 'C') {
+        root.innerHTML = renderTimelineView(filteredLessons);
+        return;
+      }
+
+      // Default: Card List (Variant A or Variant B)
+      if (filteredLessons.length === 0) {
+        root.innerHTML = `
+          <div style="text-align:center; padding: 40px 20px; color: var(--text-muted);">
+            <div style="font-size: 40px; margin-bottom: 12px;">🎉</div>
+            <div style="font-size: 16px; font-weight:700; color:#fff;">Занятий нет</div>
+            <div style="font-size: 13px; margin-top: 4px;">В этот день пар не запланировано или фильтр скрыл занятия</div>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '<div class="cards-container">';
+      filteredLessons.forEach((lesson, idx) => {
+        const isActive = isLiveSimEnabled && lesson.isActive;
+        const typeClass = lesson.typeCode === 'lecture' ? 'type-lecture' : lesson.typeCode === 'lab' ? 'type-lab' : 'type-seminar';
+        
+        html += `
+          <div class="apple-card ${isActive ? 'active-pair' : ''}" onclick="openDetailSheet('${lesson.id}')">
+            <div class="card-meta-row">
+              <div class="time-slot">
+                <span class="pair-badge">${currentConcept === 'B' ? '#' + String(lesson.num).padStart(2, '0') : lesson.num + ' пара'}</span>
+                <span>${lesson.time}</span>
+              </div>
+              <span class="type-pill ${typeClass}">${lesson.type}</span>
+            </div>
+
+            <div class="subject-title">${lesson.subject}</div>
+
+            <div class="card-footer-info">
+              <div class="teacher-chip" title="${lesson.teacher}">
+                <div class="teacher-avatar">${lesson.teacherInitials}</div>
+                <span>${lesson.teacher}</span>
+              </div>
+              <div class="room-pill">
+                <span>📍</span>
+                <span>${lesson.room}</span>
+              </div>
+            </div>
+
+            ${isActive ? `
+              <div class="active-progress-wrap">
+                <div class="live-status-header">
+                  <div class="live-pulse-badge">
+                    <span class="pulse-dot"></span>
+                    <span>ИДЁТ СЕЙЧАС</span>
+                  </div>
+                  <div style="color:var(--text-muted); font-size:11px;">
+                    Осталось <strong>${lesson.remainingMin} мин</strong>
+                  </div>
+                </div>
+                <div class="live-progress-bar">
+                  <div class="live-progress-fill"></div>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+
+        // Add break indicator after pair 3 (lunch break)
+        if (lesson.num === 3 && idx < filteredLessons.length - 1) {
+          html += `
+            <div class="break-indicator">
+              <span>☕ Перерыв 25 мин (Обед)</span>
+            </div>
+          `;
+        }
+      });
+      html += '</div>';
+
+      root.innerHTML = html;
+    }
+
+    /* Timeline View Renderer (Variant C) */
+    function renderTimelineView(lessons) {
+      if (lessons.length === 0) {
+        return `<div style="text-align:center; padding:40px; color:#9CA3AF;">Пар нет</div>`;
+      }
+
+      let html = `
+        <div class="timeline-view-wrapper">
+          ${isLiveSimEnabled ? `
+            <div class="timeline-now-marker">
+              <div class="timeline-now-dot"></div>
+              <div class="timeline-now-line"></div>
+              <div class="timeline-now-label">11:35 СЕЙЧАС</div>
+            </div>
+          ` : ''}
+      `;
+
+      lessons.forEach((lesson, idx) => {
+        const isActive = isLiveSimEnabled && lesson.isActive;
+        const [startTime, endTime] = lesson.time.split('–').map(s => s.trim());
+        const typeClass = lesson.typeCode === 'lecture' ? 'type-lecture' : lesson.typeCode === 'lab' ? 'type-lab' : 'type-seminar';
+
+        html += `
+          <div class="timeline-row">
+            <div class="timeline-spine"></div>
+            <div class="timeline-node ${isActive ? 'active' : ''}"></div>
+
+            <div class="timeline-axis">
+              <div>${startTime}</div>
+              <div style="font-size:9.5px; opacity:0.6; margin-top:22px;">${endTime}</div>
+            </div>
+
+            <div class="timeline-card-content" onclick="openDetailSheet('${lesson.id}')">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <span class="type-pill ${typeClass}">${lesson.type}</span>
+                <span style="font-size:11.5px; font-weight:700; color:#38BDF8;">${lesson.room}</span>
+              </div>
+              <div style="font-size:14px; font-weight:700; color:#fff; line-height:1.3; margin-bottom:6px;">
+                ${lesson.subject}
+              </div>
+              <div style="display:flex; align-items:center; gap:6px; font-size:12px; color:#9CA3AF;">
+                <span class="teacher-avatar" style="width:16px; height:16px; font-size:8px;">${lesson.teacherInitials}</span>
+                <span>${lesson.teacher}</span>
+              </div>
+            </div>
+          </div>
+        `;
+
+        if (lesson.num === 3 && idx < lessons.length - 1) {
+          html += `
+            <div style="margin: 10px 0 14px 72px; font-size:11.5px; color:#9CA3AF; display:flex; align-items:center; gap:6px;">
+              <span>☕</span>
+              <span>Перерыв 25 минут на обед</span>
+            </div>
+          `;
+        }
+      });
+
+      html += '</div>';
+      return html;
+    }
+
+    /* Weekly Grid Matrix View */
+    function renderWeeklyGrid() {
+      let html = '<div class="weekly-matrix">';
+      const days = SCHEDULE_DATA_WEEKS[currentWeek];
+      days.forEach(day => {
+        if (day.lessons.length === 0) return;
+        const color = day.dots[0] || '#0A84FF';
+        html += `
+          <div class="matrix-day-group">
+            <div class="matrix-day-header">
+              <div class="matrix-day-title">
+                <span class="matrix-day-color" style="background:${color}"></span>
+                <span>${day.fullName}</span>
+              </div>
+              <span style="font-size:12px; color:#9CA3AF;">${day.lessons.length} пар</span>
+            </div>
+            <div>
+              ${day.lessons.map(l => `
+                <div class="matrix-lesson-row" onclick="openDetailSheet('${l.id}')">
+                  <span class="matrix-num">#${l.num}</span>
+                  <span class="matrix-title">${l.subject}</span>
+                  <span class="matrix-room">${l.room}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      });
+      html += '</div>';
+      return html;
+    }
+
+    /* Comparison Stage Rendering */
+    function renderComparisonStage() {
+      const activeDay = SCHEDULE_DATA_WEEKS[currentWeek][selectedDayIndex];
+      const lessons = getFilteredLessons(activeDay.lessons);
+
+      // Col A: Apple Card list
+      document.getElementById('compColA').innerHTML = `
+        <div class="apple-header" style="padding-top:4px;">
+          <div style="font-size:15px; font-weight:700;">${activeDay.fullName}, ${activeDay.dateNum} Октября</div>
+        </div>
+        <div class="cards-container" style="padding-top:10px;">
+          ${lessons.map(l => `
+            <div class="apple-card ${isLiveSimEnabled && l.isActive ? 'active-pair' : ''}" onclick="openDetailSheet('${l.id}')">
+              <div class="card-meta-row">
+                <span class="time-slot"><span class="pair-badge">${l.num} пара</span> ${l.time}</span>
+                <span class="type-pill ${l.typeCode === 'lecture' ? 'type-lecture' : l.typeCode === 'lab' ? 'type-lab' : 'type-seminar'}">${l.type}</span>
+              </div>
+              <div class="subject-title">${l.subject}</div>
+              <div class="card-footer-info">
+                <div class="teacher-chip">${l.teacher}</div>
+                <div class="room-pill">📍 ${l.room}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      // Col B: Linear Dark Pro
+      document.getElementById('compColB').innerHTML = `
+        <div class="apple-header" style="background:#090A0F; padding-top:4px;">
+          <div style="font-size:14px; font-weight:700; font-family:var(--font-mono); color:#A5B4FC;">[${activeDay.dateNum} OCT] ${activeDay.fullName.toUpperCase()} • ${lessons.length} PAIRS</div>
+        </div>
+        <div class="cards-container" style="padding-top:10px;">
+          ${lessons.map(l => `
+            <div class="apple-card ${isLiveSimEnabled && l.isActive ? 'active-pair' : ''}" onclick="openDetailSheet('${l.id}')">
+              <div class="card-meta-row">
+                <span class="time-slot" style="font-family:var(--font-mono); font-size:11px;">#0${l.num} // ${l.time}</span>
+                <span class="type-pill ${l.typeCode === 'lecture' ? 'type-lecture' : l.typeCode === 'lab' ? 'type-lab' : 'type-seminar'}">${l.type}</span>
+              </div>
+              <div class="subject-title" style="font-size:14px;">${l.subject}</div>
+              <div class="card-footer-info">
+                <span style="font-size:12px; color:#8A8F98;">${l.teacher}</span>
+                <span style="font-family:var(--font-mono); font-size:12px; color:#38BDF8;">[${l.room}]</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      // Col C: Compact Timeline
+      document.getElementById('compColC').innerHTML = renderTimelineView(lessons);
+    }
+
+    /* Modal Bottom Sheet */
+    function openDetailSheet(lessonId) {
+      let lesson = null;
+      const days = SCHEDULE_DATA_WEEKS[currentWeek];
+      for (const d of days) {
+        const item = d.lessons.find(l => l.id === lessonId);
+        if (item) { lesson = item; break; }
+      }
+      if (!lesson) return;
+
+      const typeClass = lesson.typeCode === 'lecture' ? 'type-lecture' : lesson.typeCode === 'lab' ? 'type-lab' : 'type-seminar';
+      const content = document.getElementById('sheetContent');
+
+      content.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+          <span class="type-pill ${typeClass}">${lesson.type}</span>
+          <span class="pair-badge" style="font-size:12px;">${lesson.num} пара • ${lesson.time}</span>
+        </div>
+        <div class="sheet-title">${lesson.subject}</div>
+
+        <div class="sheet-detail-grid">
+          <div class="sheet-detail-card">
+            <div class="teacher-avatar" style="width:36px; height:36px; font-size:14px;">${lesson.teacherInitials}</div>
+            <div>
+              <div style="font-size:14px; font-weight:700; color:#fff;">${lesson.teacher}</div>
+              <div style="font-size:12px; color:var(--text-muted);">Преподаватель кафедры ИТ</div>
+            </div>
+          </div>
+
+          <div class="sheet-detail-card">
+            <div style="font-size:24px;">📍</div>
+            <div>
+              <div style="font-size:14px; font-weight:700; color:#93C5FD;">Аудитория ${lesson.room}</div>
+              <div style="font-size:12px; color:var(--text-muted);">${lesson.building}</div>
+            </div>
+          </div>
+
+          <div class="sheet-detail-card">
+            <div style="font-size:24px;">👥</div>
+            <div>
+              <div style="font-size:14px; font-weight:700; color:#fff;">
+                ${lesson.subgroup === 'all' ? 'Вся группа (общий поток)' : `${lesson.subgroup} подгруппа`}
+              </div>
+              <div style="font-size:12px; color:var(--text-muted);">АС-О-26/1 • 1 курс ФМИАТ</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('sheetBackdrop').classList.add('open');
+      document.getElementById('bottomSheet').classList.add('open');
+    }
+
+    function closeDetailSheet() {
+      document.getElementById('sheetBackdrop').classList.remove('open');
+      document.getElementById('bottomSheet').classList.remove('open');
+    }
+
+    // Run on startup
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
