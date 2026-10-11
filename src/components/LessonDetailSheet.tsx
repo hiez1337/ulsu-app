@@ -104,24 +104,10 @@ function getTeacherInfo(lesson: Lesson) {
     }
   }
 
-  const subj = (lesson.subject || '').toLowerCase();
-  let title = 'Доцент кафедры ИТ';
-  if (subj.includes('физик')) {
-    title = 'Доцент кафедры общей физики';
-  } else if (subj.includes('математ') || subj.includes('алгебр') || subj.includes('анализ')) {
-    title = 'Доцент кафедры высшей математики';
-  } else if (subj.includes('истор')) {
-    title = 'Доцент кафедры истории';
-  } else if (subj.includes('язык') || subj.includes('английск')) {
-    title = 'Преподаватель кафедры иностранных языков';
-  } else if (subj.includes('спорт') || subj.includes('физическ')) {
-    title = 'Преподаватель кафедры физической культуры';
-  }
-
   return {
     initials,
     fullName: name,
-    title,
+    title: 'Преподаватель УлГУ',
   };
 }
 
@@ -148,8 +134,8 @@ function getLocationInfo(lesson: Lesson) {
 
   if (room === '3/118' || room === '118') {
     return {
-      roomTitle: 'Аудитория 3/118 (Лаборатория 1С)',
-      buildingInfo: 'Корпус 3 • 1 этаж, правое крыло',
+      roomTitle: 'Аудитория 3/118',
+      buildingInfo: 'Корпус 3 • 1 этаж',
       isOnline: false,
     };
   }
@@ -159,10 +145,9 @@ function getLocationInfo(lesson: Lesson) {
     const k = slashMatch[1];
     const rNum = slashMatch[2];
     const floor = rNum.length >= 3 ? rNum[0] : (rNum.length >= 2 ? rNum[0] : '1');
-    const wing = Number(floor) % 2 === 0 ? 'левое крыло' : 'правое крыло';
     return {
       roomTitle: `Аудитория ${room}`,
-      buildingInfo: `Корпус ${k} • ${floor} этаж, ${wing}`,
+      buildingInfo: `Корпус ${k} • ${floor} этаж`,
       isOnline: false,
     };
   }
@@ -173,14 +158,14 @@ function getLocationInfo(lesson: Lesson) {
     const k = bldg || '1';
     return {
       roomTitle: `Аудитория ${room}`,
-      buildingInfo: `Корпус ${k} • ${floor} этаж, центральное крыло`,
+      buildingInfo: `Корпус ${k} • ${floor} этаж`,
       isOnline: false,
     };
   }
 
   return {
     roomTitle: `Аудитория ${room}`,
-    buildingInfo: bldg ? `Корпус ${bldg}` : 'Корпус 1 • Учебный корпус',
+    buildingInfo: bldg ? `Корпус ${bldg}` : 'Учебный корпус',
     isOnline: false,
   };
 }

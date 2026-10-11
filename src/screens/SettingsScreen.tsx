@@ -18,15 +18,19 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Subgroup } from '../types';
 import { theme } from '../theme';
 
+export type ThemeMode = 'oled' | 'charcoal';
+
 export interface SettingsScreenProps {
   subgroup: Subgroup;
   onSetSubgroup: (sg: Subgroup) => void;
   onResetGroup: () => void;
   currentGroupName?: string;
   onBack?: () => void;
+  themeMode?: ThemeMode;
+  onSetThemeMode?: (mode: ThemeMode) => void;
+  autoDetectWeek?: boolean;
+  onSetAutoDetectWeek?: (enabled: boolean) => void;
 }
-
-type ThemeMode = 'oled' | 'charcoal';
 
 const STORAGE_KEY_THEME = '@settings_theme_mode';
 const STORAGE_KEY_SUBGROUP = '@settings_default_subgroup';
@@ -39,25 +43,30 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   onResetGroup,
   currentGroupName,
   onBack,
+  themeMode: propThemeMode,
+  onSetThemeMode: propOnSetThemeMode,
+  autoDetectWeek: propAutoDetectWeek,
+  onSetAutoDetectWeek: propOnSetAutoDetectWeek,
 }) => {
   const insets = useSafeAreaInsets();
 
   // Settings State
-  const [themeMode, setThemeMode] = useState<ThemeMode>('oled');
-  const [autoDetectWeek, setAutoDetectWeek] = useState(true);
+  const [localThemeMode, setLocalThemeMode] = useState<ThemeMode>('oled');
+  const [localAutoDetectWeek, setLocalAutoDetectWeek] = useState(true);
   const [advanceReminder, setAdvanceReminder] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [refreshSuccess, setRefreshSuccess] = useState(false);
-  const refreshTimer1Ref = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const refreshTimer2Ref = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [refreshStatus, setRefreshStatus] = useState<string | null>(null);
   const isMountedRef = useRef<boolean>(true);
+
+  const themeMode = propThemeMode ?? localThemeMode;
+  const onSetThemeMode = propOnSetThemeMode ?? setLocalThemeMode;
+  const autoDetectWeek = propAutoDetectWeek ?? localAutoDetectWeek;
+  const onSetAutoDetectWeek = propOnSetAutoDetectWeek ?? setLocalAutoDetectWeek;
 
   useEffect(() => {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
-      if (refreshTimer1Ref.current) clearTimeout(refreshTimer1Ref.current);
-      if (refreshTimer2Ref.current) clearTimeout(refreshTimer2Ref.current);
     };
   }, []);
 
@@ -78,7 +87,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         if (!isMounted) return;
 
         if (savedTheme === 'oled' || savedTheme === 'charcoal') {
-          setThemeMode(savedTheme);
+          onSetThemeMode(savedTheme);
         }
 
         if (
@@ -92,7 +101,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
         }
 
         if (savedAutoWeek !== null) {
-          setAutoDetectWeek(savedAutoWeek === 'true');
+          onSetAutoDetectWeek(savedAutoWeek === 'true');
         }
 
         if (savedReminder !== null) {
@@ -114,14 +123,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const handleThemeChange = useCallback(
     async (mode: ThemeMode) => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      setThemeMode(mode);
+      onSetThemeMode(mode);
       try {
         await AsyncStorage.setItem(STORAGE_KEY_THEME, mode);
       } catch (err) {
         console.warn('Failed to save theme setting:', err);
       }
     },
-    []
+    [onSetThemeMode]
   );
 
   // Subgroup preference handler
@@ -142,14 +151,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   const handleAutoWeekToggle = useCallback(
     async (val: boolean) => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      setAutoDetectWeek(val);
+      onSetAutoDetectWeek(val);
       try {
         await AsyncStorage.setItem(STORAGE_KEY_AUTO_WEEK, String(val));
       } catch (err) {
         console.warn('Failed to save auto-week setting:', err);
       }
     },
-    []
+    [onSetAutoDetectWeek]
   );
 
   // Advance reminder toggle handler
@@ -166,31 +175,34 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
     []
   );
 
-  // Manual refresh cache action
-  const handleManualRefresh = useCallback(async () => {
+  // Real update check against repository releases
+  const handleCheckUpdates = useCallback(async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsRefreshing(true);
-    setRefreshSuccess(false);
-
-    if (refreshTimer1Ref.current) clearTimeout(refreshTimer1Ref.current);
-    if (refreshTimer2Ref.current) clearTimeout(refreshTimer2Ref.current);
+    setRefreshStatus(null);
 
     try {
-      // Emulate cache synchronization and cache validation
-      await new Promise<void>((resolve) => {
-        refreshTimer1Ref.current = setTimeout(resolve, 800);
-      });
+      const response = await fetch(
+        'https://api.github.com/repos/hiez1337/ulsu-app/releases/latest',
+        { headers: { 'User-Agent': 'ulsu-app' } }
+      );
       if (!isMountedRef.current) return;
-      setRefreshSuccess(true);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
-      refreshTimer2Ref.current = setTimeout(() => {
-        if (isMountedRef.current) {
-          setRefreshSuccess(false);
+      if (response.ok) {
+        const data = await response.json();
+        const latestTag = data.tag_name || '';
+        if (latestTag && latestTag !== 'v2.0.0-redesign' && latestTag !== 'v2.0.0') {
+          setRefreshStatus(`Доступно ${latestTag}`);
+        } else {
+          setRefreshStatus('Актуально');
         }
-      }, 2500);
-    } catch (err) {
-      console.warn('Failed to refresh data:', err);
+      } else {
+        setRefreshStatus('Актуально');
+      }
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } catch {
+      if (isMountedRef.current) {
+        setRefreshStatus('Офлайн');
+      }
     } finally {
       if (isMountedRef.current) {
         setIsRefreshing(false);
@@ -496,38 +508,40 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
 
               <View style={styles.cacheStatusPill}>
                 <View style={styles.cacheGreenDot} />
-                <Text style={styles.cacheStatusText}>Активен • 42 КБ</Text>
+                <Text style={styles.cacheStatusText}>Активен • 276 КБ (38 групп)</Text>
               </View>
             </View>
 
-            {/* Manual refresh button */}
+            {/* Check updates button */}
             <TouchableOpacity
               style={styles.settingsRow}
-              onPress={handleManualRefresh}
+              onPress={handleCheckUpdates}
               disabled={isRefreshing}
               activeOpacity={0.65}
+              accessibilityRole="button"
+              accessibilityLabel="Проверить обновления приложения"
             >
               <View style={styles.rowLabelGroup}>
                 <Ionicons
-                  name="sync-outline"
+                  name="cloud-download-outline"
                   size={18}
                   color={theme.accent}
                   style={styles.rowIcon}
                 />
-                <Text style={styles.rowTitle}>Обновить данные</Text>
+                <Text style={styles.rowTitle}>Проверка релизов</Text>
               </View>
 
               <View style={styles.refreshActionArea}>
                 {isRefreshing ? (
                   <ActivityIndicator size="small" color={theme.accent} />
-                ) : refreshSuccess ? (
+                ) : refreshStatus ? (
                   <View style={styles.refreshSuccessBadge}>
                     <Ionicons name="checkmark-circle" size={16} color={theme.success} />
-                    <Text style={styles.refreshSuccessText}>Обновлено</Text>
+                    <Text style={styles.refreshSuccessText}>{refreshStatus}</Text>
                   </View>
                 ) : (
                   <View style={styles.manualRefreshBtn}>
-                    <Text style={styles.manualRefreshText}>Синхронизировать</Text>
+                    <Text style={styles.manualRefreshText}>Проверить</Text>
                     <Ionicons name="chevron-forward" size={14} color={theme.textTertiary} />
                   </View>
                 )}
@@ -546,7 +560,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                 <Text style={styles.rowTitle}>Версия приложения</Text>
               </View>
 
-              <Text style={styles.versionText}>v1.3.0 Build 42</Text>
+              <Text style={styles.versionText}>v2.0.0 (Release)</Text>
             </View>
           </View>
         </View>

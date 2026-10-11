@@ -13,6 +13,7 @@ import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Lesson, Subgroup } from '../types';
 import { parseRawLessonText } from '../api/parser';
+import { filterLessonsBySubgroup } from '../utils/scheduleUtils';
 import { theme } from '../theme';
 import { LessonDetailSheet } from '../components/LessonDetailSheet';
 
@@ -23,6 +24,8 @@ export interface WeeklyGridScreenProps {
   onSelectLesson?: (lesson: Lesson) => void;
   onToggleWeek?: () => void;
   onBack?: () => void;
+  selectedSubgroup?: Subgroup;
+  onSelectSubgroup?: (sg: Subgroup) => void;
 }
 
 interface DayConfig {
@@ -90,9 +93,15 @@ export const WeeklyGridScreen: React.FC<WeeklyGridScreenProps> = ({
   onSelectLesson,
   onToggleWeek,
   onBack,
+  selectedSubgroup: propSelectedSubgroup,
+  onSelectSubgroup: propOnSelectSubgroup,
 }) => {
   const insets = useSafeAreaInsets();
   const [internalLesson, setInternalLesson] = useState<Lesson | null>(null);
+  const [localSubgroup, setLocalSubgroup] = useState<Subgroup>('all');
+
+  const activeSubgroup = propSelectedSubgroup ?? localSubgroup;
+  const handleSelectSubgroup = propOnSelectSubgroup ?? setLocalSubgroup;
 
   // Group lessons parsed by day
   const weeklyMatrix = useMemo(() => {
@@ -106,7 +115,14 @@ export const WeeklyGridScreen: React.FC<WeeklyGridScreenProps> = ({
 
       const parsedLessons: Lesson[] = [];
       for (const item of rawList) {
-        const parsed = parseRawLessonText(item.num, item.time, item.text, dayIndex);
+        const parsed = parseRawLessonText(
+          item.num,
+          item.time,
+          item.text,
+          dayIndex,
+          selectedGroup,
+          weekType
+        );
         parsedLessons.push(...parsed);
       }
 
@@ -117,13 +133,16 @@ export const WeeklyGridScreen: React.FC<WeeklyGridScreenProps> = ({
         return a.subgroup.localeCompare(b.subgroup);
       });
 
+      const filteredLessons = filterLessonsBySubgroup(parsedLessons, activeSubgroup);
+
       return {
         ...day,
         dayIndex,
-        lessons: parsedLessons,
+        lessons: filteredLessons,
+        totalLessons: parsedLessons.length,
       };
     });
-  }, [scheduleData, selectedGroup, weekType]);
+  }, [scheduleData, selectedGroup, weekType, activeSubgroup]);
 
   const handleLessonPress = useCallback(
     (lesson: Lesson) => {
@@ -155,6 +174,8 @@ export const WeeklyGridScreen: React.FC<WeeklyGridScreenProps> = ({
               onPress={onBack}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Назад к расписанию дня"
             >
               <Ionicons name="chevron-back" size={24} color={theme.accent} />
               <Text style={styles.backButtonText}>Назад</Text>
@@ -175,6 +196,8 @@ export const WeeklyGridScreen: React.FC<WeeklyGridScreenProps> = ({
                 onPress={handleToggleWeek}
                 activeOpacity={0.7}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel={`Переключить на ${weekType === '1' ? '2-ю' : '1-ю'} неделю`}
               >
                 <Ionicons name="swap-horizontal" size={14} color={theme.accent} />
                 <Text style={styles.weekToggleText}>
@@ -187,6 +210,81 @@ export const WeeklyGridScreen: React.FC<WeeklyGridScreenProps> = ({
 
         <Text style={styles.largeTitle}>Сетка недели</Text>
         <Text style={styles.subtitle}>Полная учебная нагрузка понедельник–суббота</Text>
+
+        {/* Subgroup Filter Segmented Control */}
+        <View style={styles.subgroupControl}>
+          <TouchableOpacity
+            style={[
+              styles.subgroupPill,
+              activeSubgroup === 'all' && styles.subgroupPillActive,
+            ]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              handleSelectSubgroup('all');
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Показать все подгруппы"
+            accessibilityState={{ selected: activeSubgroup === 'all' }}
+            activeOpacity={0.7}
+          >
+            <Text
+              style={[
+                styles.subgroupPillText,
+                activeSubgroup === 'all' && styles.subgroupPillTextActive,
+              ]}
+            >
+              Все
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.subgroupPill,
+              activeSubgroup === '1' && styles.subgroupPillActive,
+            ]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              handleSelectSubgroup('1');
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Показать только первую подгруппу"
+            accessibilityState={{ selected: activeSubgroup === '1' }}
+            activeOpacity={0.7}
+          >
+            <Text
+              style={[
+                styles.subgroupPillText,
+                activeSubgroup === '1' && styles.subgroupPillTextActive,
+              ]}
+            >
+              1 подгруппа
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.subgroupPill,
+              activeSubgroup === '2' && styles.subgroupPillActive,
+            ]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              handleSelectSubgroup('2');
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Показать только вторую подгруппу"
+            accessibilityState={{ selected: activeSubgroup === '2' }}
+            activeOpacity={0.7}
+          >
+            <Text
+              style={[
+                styles.subgroupPillText,
+                activeSubgroup === '2' && styles.subgroupPillTextActive,
+              ]}
+            >
+              2 подгруппа
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* 6-Day Schedule Matrix List */}
@@ -400,6 +498,35 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: theme.textSecondary,
     marginTop: 2,
+    marginBottom: 10,
+  },
+  subgroupControl: {
+    flexDirection: 'row',
+    backgroundColor: theme.bgTertiary,
+    borderRadius: 10,
+    padding: 3,
+    marginTop: 4,
+  },
+  subgroupPill: {
+    flex: 1,
+    minHeight: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  subgroupPillActive: {
+    backgroundColor: theme.bgSecondary,
+    ...theme.shadow,
+  },
+  subgroupPillText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: theme.textSecondary,
+  },
+  subgroupPillTextActive: {
+    color: theme.textPrimary,
+    fontWeight: '700',
   },
   scrollList: {
     flex: 1,

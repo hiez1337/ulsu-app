@@ -47,43 +47,63 @@ const FILTER_OPTIONS: FilterOption[] = [
   { key: 'free', label: 'Свободные' },
 ];
 
+export interface PairSlotInfo {
+  pairNum: number;
+  timeFormatted: string;
+  label: string;
+  isStudyHours: boolean;
+}
+
+export const PAIR_SLOTS = [
+  { num: 1, label: '1 пара', time: '08:00–09:20' },
+  { num: 2, label: '2 пара', time: '09:30–10:50' },
+  { num: 3, label: '3 пара', time: '11:00–12:20' },
+  { num: 4, label: '4 пара', time: '12:45–14:05' },
+  { num: 5, label: '5 пара', time: '14:15–15:35' },
+  { num: 6, label: '6 пара', time: '15:45–17:05' },
+  { num: 7, label: '7 пара', time: '17:15–18:35' },
+  { num: 8, label: '8 пара', time: '18:45–20:05' },
+];
+
 /**
  * Calculates current pair slot and display time string.
  */
-function getActivePairSlot(): { pairNum: number; timeFormatted: string; label: string } {
+function getActivePairSlot(): PairSlotInfo {
   const now = new Date();
   const mins = now.getHours() * 60 + now.getMinutes();
   const hh = String(now.getHours()).padStart(2, '0');
   const mm = String(now.getMinutes()).padStart(2, '0');
   const timeFormatted = `${hh}:${mm}`;
 
+  if (mins < 480) {
+    return { pairNum: 1, timeFormatted, label: 'До начала пар (08:00)', isStudyHours: false };
+  }
   if (mins < 570) {
-    return { pairNum: 1, timeFormatted, label: '1 пара (08:00–09:20)' };
+    return { pairNum: 1, timeFormatted, label: '1 пара (08:00–09:20)', isStudyHours: true };
   }
   if (mins < 660) {
-    return { pairNum: 2, timeFormatted, label: '2 пара (09:30–10:50)' };
+    return { pairNum: 2, timeFormatted, label: '2 пара (09:30–10:50)', isStudyHours: true };
   }
   if (mins < 765) {
-    return { pairNum: 3, timeFormatted, label: '3 пара (11:00–12:20)' };
+    return { pairNum: 3, timeFormatted, label: '3 пара (11:00–12:20)', isStudyHours: true };
   }
   if (mins < 855) {
-    return { pairNum: 4, timeFormatted, label: '4 пара (12:45–14:05)' };
+    return { pairNum: 4, timeFormatted, label: '4 пара (12:45–14:05)', isStudyHours: true };
   }
   if (mins < 945) {
-    return { pairNum: 5, timeFormatted, label: '5 пара (14:15–15:35)' };
+    return { pairNum: 5, timeFormatted, label: '5 пара (14:15–15:35)', isStudyHours: true };
   }
   if (mins < 1035) {
-    return { pairNum: 6, timeFormatted, label: '6 пара (15:45–17:05)' };
+    return { pairNum: 6, timeFormatted, label: '6 пара (15:45–17:05)', isStudyHours: true };
   }
   if (mins < 1125) {
-    return { pairNum: 7, timeFormatted, label: '7 пара (17:15–18:35)' };
+    return { pairNum: 7, timeFormatted, label: '7 пара (17:15–18:35)', isStudyHours: true };
   }
   if (mins < 1215) {
-    return { pairNum: 8, timeFormatted, label: '8 пара (18:45–20:05)' };
+    return { pairNum: 8, timeFormatted, label: '8 пара (18:45–20:05)', isStudyHours: true };
   }
 
-  // Outside study hours: fallback to daytime pair 2 for demonstration
-  return { pairNum: 2, timeFormatted: '10:00', label: '2 пара (09:30–10:50)' };
+  return { pairNum: 1, timeFormatted, label: 'Занятия окончены (после 20:05)', isStudyHours: false };
 }
 
 /**
@@ -154,6 +174,7 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
     todayIndex >= 0 && todayIndex <= 6 ? WEEKDAY_NAMES[todayIndex] : 'Понедельник';
 
   const activeSlot = useMemo(() => getActivePairSlot(), []);
+  const [selectedPairNum, setSelectedPairNum] = useState<number>(() => activeSlot.pairNum);
 
   // In-memory caching for teacher and room detailed queries
   const teacherScheduleCache = React.useRef(new Map<string, DetailedScheduleEntry[]>());
@@ -192,15 +213,15 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
     return getAllTeachers(scheduleData);
   }, [scheduleData]);
 
-  // Retrieve room statuses for active day and pair slot
+  // Retrieve room statuses for active day and selected pair slot
   const roomsList = useMemo(() => {
     return getAllRoomsStatus(
       scheduleData,
       currentWeek,
       currentDayName,
-      activeSlot.pairNum
+      selectedPairNum
     );
-  }, [scheduleData, currentWeek, currentDayName, activeSlot.pairNum]);
+  }, [scheduleData, currentWeek, currentDayName, selectedPairNum]);
 
   // Filter teachers based on query and filter tab
   const filteredTeachers = useMemo(() => {
@@ -384,6 +405,9 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
                 onPress={() => handleFilterPress(option.key)}
                 activeOpacity={0.7}
                 hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
+                accessibilityRole="button"
+                accessibilityLabel={`Фильтр: ${option.label}`}
+                accessibilityState={{ selected: isActive }}
               >
                 <Text
                   style={[
@@ -397,6 +421,52 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
             );
           })}
         </View>
+
+        {/* Pair Slot Selector for Rooms */}
+        {(activeFilter === 'rooms' || activeFilter === 'free') && (
+          <View style={styles.pairPickerWrapper}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.pairPickerContent}
+            >
+              {PAIR_SLOTS.map((slot) => {
+                const isSelected = selectedPairNum === slot.num;
+                return (
+                  <TouchableOpacity
+                    key={slot.num}
+                    style={[styles.pairPill, isSelected && styles.pairPillActive]}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setSelectedPairNum(slot.num);
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${slot.label}, время ${slot.time}`}
+                    accessibilityState={{ selected: isSelected }}
+                    activeOpacity={0.7}
+                  >
+                    <Text
+                      style={[
+                        styles.pairPillTitle,
+                        isSelected && styles.pairPillTitleActive,
+                      ]}
+                    >
+                      {slot.label}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.pairPillTime,
+                        isSelected && styles.pairPillTimeActive,
+                      ]}
+                    >
+                      {slot.time}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
       </View>
 
       {/* Main Content Area */}
@@ -469,11 +539,20 @@ export const SearchScreen: React.FC<SearchScreenProps> = ({
         {/* Classroom Availability Section */}
         {filteredRooms.length > 0 && (
           <View style={styles.section}>
+            {!activeSlot.isStudyHours && (
+              <View style={styles.outsideHoursBanner}>
+                <Ionicons name="information-circle-outline" size={16} color={theme.teal} />
+                <Text style={styles.outsideHoursText}>
+                  Текущее время ({activeSlot.timeFormatted}) вне расписания. Показана занятость на выбранную пару:
+                </Text>
+              </View>
+            )}
+
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>
                 {activeFilter === 'free'
-                  ? `СВОБОДНЫЕ АУДИТОРИИ СЕЙЧАС (${activeSlot.timeFormatted})`
-                  : `АУДИТОРИИ (${activeSlot.timeFormatted} • ${activeSlot.label})`}
+                  ? `СВОБОДНЫЕ АУДИТОРИИ (${selectedPairNum} ПАРА • ${PAIR_SLOTS[selectedPairNum - 1]?.time || ''})`
+                  : `АУДИТОРИИ (${selectedPairNum} ПАРА • ${PAIR_SLOTS[selectedPairNum - 1]?.time || ''})`}
               </Text>
               <Text style={styles.sectionCountBadge}>
                 {filteredRooms.length} ауд.
@@ -873,6 +952,63 @@ const styles = StyleSheet.create({
   filterPillTextActive: {
     color: '#FFFFFF',
     fontWeight: '700',
+  },
+  pairPickerWrapper: {
+    marginTop: 8,
+    marginHorizontal: -4,
+  },
+  pairPickerContent: {
+    flexDirection: 'row',
+    gap: 6,
+    paddingHorizontal: 4,
+  },
+  pairPill: {
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    backgroundColor: theme.bgTertiary,
+    alignItems: 'center',
+    minWidth: 70,
+  },
+  pairPillActive: {
+    backgroundColor: 'rgba(10, 132, 255, 0.25)',
+    borderWidth: 1,
+    borderColor: theme.accent,
+  },
+  pairPillTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: theme.textSecondary,
+  },
+  pairPillTitleActive: {
+    color: theme.accent,
+    fontWeight: '700',
+  },
+  pairPillTime: {
+    fontSize: 10,
+    color: theme.textTertiary,
+    marginTop: 1,
+  },
+  pairPillTimeActive: {
+    color: theme.textSecondary,
+  },
+  outsideHoursBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(100, 210, 255, 0.1)',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    gap: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(100, 210, 255, 0.2)',
+  },
+  outsideHoursText: {
+    flex: 1,
+    fontSize: 12,
+    color: theme.teal,
+    lineHeight: 16,
   },
   contentList: {
     flex: 1,

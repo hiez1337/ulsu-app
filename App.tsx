@@ -9,6 +9,7 @@ import {
   WeeklyGridScreen,
   SearchScreen,
   SettingsScreen,
+  ThemeMode,
 } from './src/screens';
 import { Navigation, LessonDetailSheet } from './src/components';
 import { ActiveTab, Subgroup, Lesson } from './src/types';
@@ -17,6 +18,8 @@ import scheduleData from './src/data/schedule.json';
 
 const STORAGE_KEY_GROUP = 'lastSelectedGroup';
 const STORAGE_KEY_SUBGROUP = '@settings_default_subgroup';
+const STORAGE_KEY_THEME = '@settings_theme_mode';
+const STORAGE_KEY_AUTO_WEEK = '@settings_auto_week_parity';
 
 function getInitialWeekType(): '1' | '2' {
   const now = new Date();
@@ -37,20 +40,25 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('schedule');
   const [weekType, setWeekType] = useState<'1' | '2'>(getInitialWeekType);
   const [selectedSubgroup, setSelectedSubgroup] = useState<Subgroup>('all');
+  const [themeMode, setThemeMode] = useState<ThemeMode>('oled');
+  const [autoDetectWeek, setAutoDetectWeek] = useState<boolean>(true);
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [isDetailSheetVisible, setIsDetailSheetVisible] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Load saved group and subgroup on startup
+  // Load saved preferences on startup
   useEffect(() => {
     let isMounted = true;
 
     async function loadPreferences() {
       try {
-        const [savedGroupRaw, savedSubgroupRaw] = await Promise.all([
-          AsyncStorage.getItem(STORAGE_KEY_GROUP),
-          AsyncStorage.getItem(STORAGE_KEY_SUBGROUP),
-        ]);
+        const [savedGroupRaw, savedSubgroupRaw, savedThemeRaw, savedAutoWeekRaw] =
+          await Promise.all([
+            AsyncStorage.getItem(STORAGE_KEY_GROUP),
+            AsyncStorage.getItem(STORAGE_KEY_SUBGROUP),
+            AsyncStorage.getItem(STORAGE_KEY_THEME),
+            AsyncStorage.getItem(STORAGE_KEY_AUTO_WEEK),
+          ]);
 
         if (!isMounted) return;
 
@@ -85,6 +93,14 @@ function AppContent() {
           savedSubgroupRaw === 'all'
         ) {
           setSelectedSubgroup(savedSubgroupRaw);
+        }
+
+        if (savedThemeRaw === 'oled' || savedThemeRaw === 'charcoal') {
+          setThemeMode(savedThemeRaw);
+        }
+
+        if (savedAutoWeekRaw !== null) {
+          setAutoDetectWeek(savedAutoWeekRaw === 'true');
         }
       } catch {
         // Ignore read error
@@ -131,14 +147,31 @@ function AppContent() {
     setWeekType((prev) => (prev === '1' ? '2' : '1'));
   }, []);
 
-  const handleRefresh = useCallback(() => {
-    setWeekType(getInitialWeekType());
+  const handleSelectThemeMode = useCallback((mode: ThemeMode) => {
+    setThemeMode(mode);
+    AsyncStorage.setItem(STORAGE_KEY_THEME, mode).catch(() => {});
   }, []);
+
+  const handleSelectAutoDetectWeek = useCallback((val: boolean) => {
+    setAutoDetectWeek(val);
+    AsyncStorage.setItem(STORAGE_KEY_AUTO_WEEK, String(val)).catch(() => {});
+    if (val) {
+      setWeekType(getInitialWeekType());
+    }
+  }, []);
+
+  const handleRefresh = useCallback(() => {
+    if (autoDetectWeek) {
+      setWeekType(getInitialWeekType());
+    }
+  }, [autoDetectWeek]);
+
+  const rootBgColor = themeMode === 'charcoal' ? '#121214' : '#000000';
 
   if (isLoading) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <StatusBar style="light" backgroundColor="#000000" />
+      <View style={[styles.container, styles.center, { backgroundColor: rootBgColor }]}>
+        <StatusBar style="light" backgroundColor={rootBgColor} />
         <ActivityIndicator size="large" color="#0A84FF" />
       </View>
     );
@@ -146,9 +179,9 @@ function AppContent() {
 
   if (!currentGroup || isSelectingGroup) {
     return (
-      <View style={styles.container}>
-        <StatusBar style="light" backgroundColor="#000000" />
-        <View style={styles.appWrapper}>
+      <View style={[styles.container, { backgroundColor: rootBgColor }]}>
+        <StatusBar style="light" backgroundColor={rootBgColor} />
+        <View style={[styles.appWrapper, { backgroundColor: rootBgColor }]}>
           <GroupSelectionScreen
             onSelectGroup={handleSelectGroup}
             initialCategory={currentGroup?.category}
@@ -182,6 +215,8 @@ function AppContent() {
             scheduleData={scheduleData}
             selectedGroup={currentGroup.name}
             weekType={weekType}
+            selectedSubgroup={selectedSubgroup}
+            onSelectSubgroup={handleSelectSubgroup}
             onSelectLesson={handleSelectLesson}
             onToggleWeek={handleToggleWeek}
             onBack={() => setActiveTab('schedule')}
@@ -203,6 +238,10 @@ function AppContent() {
             onResetGroup={() => setIsSelectingGroup(true)}
             currentGroupName={currentGroup.name}
             onBack={() => setActiveTab('schedule')}
+            themeMode={themeMode}
+            onSetThemeMode={handleSelectThemeMode}
+            autoDetectWeek={autoDetectWeek}
+            onSetAutoDetectWeek={handleSelectAutoDetectWeek}
           />
         );
       default:
@@ -211,9 +250,9 @@ function AppContent() {
   };
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="light" backgroundColor="#000000" />
-      <View style={styles.appWrapper}>
+    <View style={[styles.container, { backgroundColor: rootBgColor }]}>
+      <StatusBar style="light" backgroundColor={rootBgColor} />
+      <View style={[styles.appWrapper, { backgroundColor: rootBgColor }]}>
         <View style={styles.contentContainer}>
           {renderActiveTabContent()}
         </View>

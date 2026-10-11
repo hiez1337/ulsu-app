@@ -107,29 +107,9 @@ const DEPARTMENT_META: Record<string, DepartmentMeta> = {
 
 const PRIMARY_DEPARTMENTS = ['ПМ', 'ИС', 'АС', 'ИБ'];
 
-const GROUP_METADATA: Record<string, { studentCount: number; shift: string }> = {
-  'ПМ-О-26/1': { studentCount: 26, shift: '1 смена' },
-  'ПМ-О-26/2': { studentCount: 24, shift: '1 смена' },
-  'ИС-О-26/1': { studentCount: 28, shift: '1 смена' },
-  'АС-О-26/1': { studentCount: 25, shift: '1 смена' },
-  'ИБ-О-26/1': { studentCount: 27, shift: '1 смена' },
-  'МОАИС-О-26/1': { studentCount: 26, shift: '1 смена' },
-  'АТПП-О-26/1': { studentCount: 22, shift: '1 смена' },
-  'КБ-О-23/1': { studentCount: 20, shift: '2 смена' },
-  'ПРИ-О-26/1': { studentCount: 29, shift: '1 смена' },
-};
-
-function getGroupMeta(groupName: string): { studentCount: number; shift: string } {
-  if (GROUP_METADATA[groupName]) {
-    return GROUP_METADATA[groupName];
-  }
-  let hash = 0;
-  for (let i = 0; i < groupName.length; i++) {
-    hash = (hash * 31 + groupName.charCodeAt(i)) & 0xffffffff;
-  }
-  const studentCount = 22 + (Math.abs(hash) % 7);
-  const shift = Math.abs(hash) % 3 === 0 ? '2 смена' : '1 смена';
-  return { studentCount, shift };
+function getGroupSubtitle(category: string, course: string): string {
+  const isMaster = category.endsWith('М');
+  return isMaster ? `${course} курс • Магистратура` : `${course} курс • Очная форма`;
 }
 
 function triggerHaptic(style: 'light' | 'medium' | 'selection' = 'light') {
@@ -441,7 +421,6 @@ export const GroupSelectionScreen: React.FC<GroupSelectionScreenProps> = ({
           <View style={styles.groupGrid}>
             {availableGroups.map((grp) => {
               const isGroupActive = selectedGroup === grp;
-              const meta = getGroupMeta(grp);
 
               return (
                 <TouchableOpacity
@@ -452,6 +431,9 @@ export const GroupSelectionScreen: React.FC<GroupSelectionScreenProps> = ({
                   ]}
                   onPress={() => handleSelectGroup(grp)}
                   activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Группа ${grp}, ${getGroupSubtitle(selectedCategory, selectedCourse)}`}
+                  accessibilityState={{ selected: isGroupActive }}
                 >
                   <View style={styles.groupChipHeader}>
                     <Text
@@ -478,7 +460,7 @@ export const GroupSelectionScreen: React.FC<GroupSelectionScreenProps> = ({
                     )}
                   </View>
                   <Text style={styles.groupMeta}>
-                    {meta.studentCount} студ. • {meta.shift}
+                    {getGroupSubtitle(selectedCategory, selectedCourse)}
                   </Text>
                 </TouchableOpacity>
               );

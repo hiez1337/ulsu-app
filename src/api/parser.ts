@@ -25,7 +25,9 @@ export function parseRawLessonText(
   num: number,
   time: string,
   rawText: string,
-  dayIndex: number
+  dayIndex: number,
+  groupName?: string,
+  weekType?: '1' | '2'
 ): Lesson[] {
   if (typeof rawText !== 'string' || !rawText.trim()) {
     return [];
@@ -162,7 +164,9 @@ export function parseRawLessonText(
     // Strip redundant trailing type abbreviation at end of subject title
     subject = subject.replace(/\s+(?:лаб|лек|сем|прак|пр)\.?$/iu, '').trim();
 
-    const id = `lesson_${dayIndex}_${num}_${subgroup}_${partIdx}`;
+    const groupKey = groupName ? `${groupName.replace(/[\/\s]/g, '_')}_` : '';
+    const weekKey = weekType ? `w${weekType}_` : '';
+    const id = `lesson_${groupKey}${weekKey}d${dayIndex}_p${num}_sg${subgroup}_${partIdx}`;
 
     return {
       id,
@@ -177,6 +181,8 @@ export function parseRawLessonText(
       building,
       subgroup,
       raw: partText,
+      groupName,
+      weekType,
     };
   });
 }

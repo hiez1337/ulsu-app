@@ -89,7 +89,9 @@ export function getAllRoomsStatus(
               rawLesson.num,
               rawLesson.time,
               rawLesson.text,
-              0
+              0,
+              grp,
+              currentWeek as '1' | '2'
             );
             for (const l of parsedList) {
               if (l.room && l.room.trim() !== '') {
@@ -192,7 +194,9 @@ export function getAllTeachers(scheduleData: any): TeacherInfo[] {
                   rawLesson.num,
                   rawLesson.time,
                   rawLesson.text,
-                  0
+                  0,
+                  grp,
+                  wk as '1' | '2'
                 );
                 for (const l of parsedList) {
                   if (l.teacher && l.teacher.trim() !== '') {
@@ -290,7 +294,9 @@ export function getLessonsForGroup(
       item.num,
       item.time,
       item.text,
-      dayIndex >= 0 ? dayIndex : 0
+      dayIndex >= 0 ? dayIndex : 0,
+      groupName,
+      week
     );
     lessons.push(...parsed);
   }
@@ -402,7 +408,9 @@ export function getTeacherSchedule(
                   rawLesson.num,
                   rawLesson.time,
                   rawLesson.text,
-                  0
+                  WEEKDAY_LIST.indexOf(day) >= 0 ? WEEKDAY_LIST.indexOf(day) : 0,
+                  grp,
+                  wk as '1' | '2'
                 );
                 for (const l of parsedList) {
                   if (l.teacher && l.teacher.trim().toLowerCase() === target) {
@@ -467,7 +475,9 @@ export function getRoomSchedule(
                   rawLesson.num,
                   rawLesson.time,
                   rawLesson.text,
-                  0
+                  WEEKDAY_LIST.indexOf(day) >= 0 ? WEEKDAY_LIST.indexOf(day) : 0,
+                  grp,
+                  wk as '1' | '2'
                 );
                 for (const l of parsedList) {
                   if (l.room && l.room.trim().toLowerCase() === target) {

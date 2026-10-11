@@ -16,6 +16,8 @@ export interface Lesson {
   subgroup: Subgroup;
   raw: string;
   isActive?: boolean;
+  groupName?: string;
+  weekType?: '1' | '2';
 }
 
 export interface ScheduleItem {
